@@ -63,9 +63,9 @@ public class InMemoryUserStorage implements UserStorage {
             if (user.getEmail() != null) {
                 if (existEmail(user.getEmail())) {
                     log.warn("Почта уже существует!");
-                    throw new ConflictException("Почта уже существует!");
+                }else {
+                    findedUser.setEmail(user.getEmail());
                 }
-                findedUser.setEmail(user.getEmail());
             }
             if (user.getName() != null) {
                 findedUser.setName(user.getName());
