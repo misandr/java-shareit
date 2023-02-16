@@ -13,7 +13,7 @@ public class Item {
     private User owner;
     private ItemRequest request;
 
-    public Item(Integer id, String name, String description, Boolean available){
+    public Item(Integer id, String name, String description, Boolean available) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -23,7 +23,7 @@ public class Item {
         request = null;
     }
 
-    public Boolean isAvailable(){
+    public Boolean isAvailable() {
         return available;
     }
 }
