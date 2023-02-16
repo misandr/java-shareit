@@ -7,6 +7,7 @@ import ru.practicum.shareit.exceptions.ConflictException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 
 import ru.practicum.shareit.exceptions.ValidationException;
+
 import java.util.*;
 
 @Slf4j
@@ -63,7 +64,7 @@ public class InMemoryUserStorage implements UserStorage {
             if (user.getEmail() != null) {
                 if (existEmail(user.getEmail())) {
                     log.warn("Почта уже существует!");
-                }else {
+                } else {
                     findedUser.setEmail(user.getEmail());
                 }
             }
