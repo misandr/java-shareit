@@ -70,7 +70,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> getItems(Integer userId) {
         List<ItemDto> listItemDto = new ArrayList<>();
         for (Item item : itemStorage.getItems()) {
-            if (item.getOwner().getId().intValue() == userId) {
+            if (item.getOwner().getId() == userId) {
                 listItemDto.add(ItemMapper.toItemDto(item));
             }
         }
