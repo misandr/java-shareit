@@ -12,7 +12,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
-import ru.practicum.shareit.exceptions.ValidationException;
 import java.util.ArrayList;
 import java.util.List;
 
