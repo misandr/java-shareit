@@ -1,14 +1,15 @@
 package ru.practicum.shareit.booking;
 
-
+import lombok.Data;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 
+@Data
 public class Booking {
-    Integer id;
-    String start;
-    String end;
-    Item item;
-    User booker;
-    String status; //— статус бронирования. Может принимать одно из следующих
+    private int id;
+    private String start;
+    private String end;
+    private Item item;
+    private User booker;
+    private String status;
 }

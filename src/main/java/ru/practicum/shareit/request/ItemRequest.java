@@ -5,8 +5,8 @@ import ru.practicum.shareit.user.User;
 
 @Data
 public class ItemRequest {
-    Integer id;
-    String description;
-    User requestor;
-    String created;
+    private int id;
+    private String description;
+    private User requestor;
+    private String created;
 }

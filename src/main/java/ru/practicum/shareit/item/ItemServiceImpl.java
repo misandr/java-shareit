@@ -5,7 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.exceptions.NotFoundException;
+import ru.practicum.shareit.exceptions.NullValidationException;
+import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -28,20 +29,20 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto addItem(Integer userId, ItemDto itemDto) {
-        User user = userService.getById(userId);
+        User user = userService.getUser(userId);
 
         if (user == null) {
-            throw new NotFoundException("Не найден пользователь " + userId);
+            throw new UserNotFoundException(userId);
         }
 
         if (itemDto.getAvailable() == null) {
-            log.warn("Available не указан!");
-            throw new ValidationException("Available не указан!");
+            log.warn("Available is null!");
+            throw new NullValidationException("Available");
         }
 
         if (itemDto.getDescription() == null) {
-            log.warn("Description не указан!");
-            throw new ValidationException("Description не указан!");
+            log.warn("Description is null!");
+            throw new NullValidationException("Description");
         }
 //        if(userService)
         Item item = ItemMapper.toItem(itemDto);
@@ -53,10 +54,10 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto updateItem(Integer userId, ItemDto itemDto) {
-        User user = userService.getById(userId);
+        User user = userService.getUser(userId);
 
         if (user == null) {
-            throw new NotFoundException("Не найден пользователь " + userId);
+            throw new UserNotFoundException(userId);
         }
 
         Item item = ItemMapper.toItem(itemDto);

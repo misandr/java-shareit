@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exceptions.ForbiddenException;
+import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.model.Item;
@@ -26,13 +27,13 @@ public class InMemoryItemStorage implements ItemStorage {
     public Item addItem(Item item) {
 
         if (item == null) {
-            log.warn("Запрос пустой!");
-            throw new ValidationException("Запрос пустой!");
+            log.warn("Request for add item is empty!");
+            throw new ValidationException("Request for add item is empty!");
         }
 
         if ((item.getName() == null) || item.getName().isBlank()) {
-            log.warn("Имя неправильное!");
-            throw new ValidationException("Имя неправлиьное!");
+            log.warn("Bad name for item!");
+            throw new ValidationException("Bad name for item!");
         }
 
         item.setId(generateId);
@@ -44,27 +45,26 @@ public class InMemoryItemStorage implements ItemStorage {
     }
 
     public Item updateItem(Item item) {
-        Item findedItem = getItem(item.getId());
-        if (findedItem != null) {
-            if (findedItem.getOwner() != item.getOwner()) {
-                throw new ForbiddenException("Другой пользователь!");
-            }
+        Item gettedItem = getItem(item.getId());
 
-            if (item.getName() != null) {
-                findedItem.setName(item.getName());
-            }
-
-            if (item.getDescription() != null) {
-                findedItem.setDescription(item.getDescription());
-            }
-
-            if (item.getAvailable() != null) {
-                findedItem.setAvailable(item.getAvailable());
-            }
-        } else {
-            throw new NotFoundException("Нет такого вещи!");
+        if (gettedItem.getOwner() != item.getOwner()) {
+            log.warn("Another user!");
+            throw new ForbiddenException("Another user!");
         }
-        return findedItem;
+
+        if (item.getName() != null) {
+            gettedItem.setName(item.getName());
+        }
+
+        if (item.getDescription() != null) {
+            gettedItem.setDescription(item.getDescription());
+        }
+
+        if (item.getAvailable() != null) {
+            gettedItem.setAvailable(item.getAvailable());
+        }
+
+        return gettedItem;
     }
 
     public List<Item> getItems() {
@@ -76,8 +76,8 @@ public class InMemoryItemStorage implements ItemStorage {
         if (items.containsKey(id)) {
             return items.get(id);
         } else {
-            log.warn("Нет такого пользователя!");
-            throw new NotFoundException("Нет такого пользователя!");
+            log.warn("Not found item with id " + id);
+            throw new ItemNotFoundException(id);
         }
     }
 }

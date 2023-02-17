@@ -4,8 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.exceptions.ConflictException;
-import ru.practicum.shareit.exceptions.NotFoundException;
 
+import ru.practicum.shareit.exceptions.NullValidationException;
+import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import java.util.*;
 
@@ -25,28 +26,28 @@ public class InMemoryUserStorage implements UserStorage {
     public User addUser(User user) {
 
         if (user == null) {
-            log.warn("Запрос пустой!");
-            throw new ValidationException("Запрос пустой!");
+            log.warn("Request for add user is empty!");
+            throw new NullValidationException("User");
         }
 
         if ((user.getName() == null) || user.getName().isBlank()) {
-            log.warn("Имя неправлиьное!");
-            throw new ValidationException("Имя неправлиьное!");
+            log.warn("Bad name for user!");
+            throw new ValidationException("Bad name for user!");
         }
 
         if (user.getEmail() == null) {
-            log.warn("Почта не указана!");
-            throw new ValidationException("Почта не указана!");
+            log.warn("Email is null!");
+            throw new NullValidationException("Email");
         }
 
         if (user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Почта неправильная!");
-            throw new ValidationException("Почта неправильная!");
+            log.warn("Bad email!");
+            throw new ValidationException("Bad email!");
         }
 
         if (existEmail(user.getEmail())) {
-            log.warn("Почта уже существует!");
-            throw new ConflictException("Почта уже существует!");
+            log.warn("Email exists!");
+            throw new ConflictException("Email exists!");
         }
 
         user.setId(generateId);
@@ -58,24 +59,22 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User updateUser(User user) {
-        User findedUser = getUser(user.getId());
-        if (findedUser != null) {
-            if (user.getEmail() != null) {
-                if (!findedUser.getEmail().equals(user.getEmail())) {
-                    if (existEmail(user.getEmail())) {
-                        log.warn("Почта уже существует!");
-                        throw new ConflictException("Почта уже существует!");
-                    }
+        User gettedUser = getUser(user.getId());
+
+        if (user.getEmail() != null) {
+            if (!gettedUser.getEmail().equals(user.getEmail())) {
+                if (existEmail(user.getEmail())) {
+                    log.warn("Email exists!");
+                    throw new ConflictException("Email exists!");
                 }
-                findedUser.setEmail(user.getEmail());
             }
-            if (user.getName() != null) {
-                findedUser.setName(user.getName());
-            }
-        } else {
-            throw new NotFoundException("Нет такого пользователя!");
+            gettedUser.setEmail(user.getEmail());
         }
-        return findedUser;
+        if (user.getName() != null) {
+            gettedUser.setName(user.getName());
+        }
+
+        return gettedUser;
     }
 
     @Override
@@ -88,8 +87,8 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(userId)) {
             return users.get(userId);
         } else {
-            log.warn("Нет такого пользователя!");
-            throw new NotFoundException("Нет такого пользователя!");
+            log.warn("Not found user " + userId);
+            throw new UserNotFoundException(userId);
         }
     }
 
@@ -98,8 +97,8 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(userId)) {
             users.remove(userId);
         } else {
-            log.warn("Нет такого пользователя!");
-            throw new NotFoundException("Нет такого пользователя!");
+            log.warn("Not found user " + userId);
+            throw new UserNotFoundException(userId);
         }
     }
 

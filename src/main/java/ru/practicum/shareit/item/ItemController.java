@@ -9,6 +9,8 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import javax.validation.Valid;
 import java.util.List;
 
+import static ru.practicum.shareit.Constants.HEADER_USER_ID;
+
 @Slf4j
 @RestController
 @RequestMapping("/items")
@@ -19,39 +21,39 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemDto addItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
+    public ItemDto addItem(@RequestHeader(HEADER_USER_ID) Integer userId,
                            @Valid @RequestBody ItemDto itemDto) {
-        log.info("Добавление новой вещи {} пользователя {}", itemDto, userId);
+        log.info("Add new item {}, user {}", itemDto, userId);
 
         return itemService.addItem(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto updateItem(@RequestHeader("X-Sharer-User-Id") Integer userId,
+    public ItemDto updateItem(@RequestHeader(HEADER_USER_ID) Integer userId,
                               @PathVariable Integer itemId, @Valid @RequestBody ItemDto itemDto) {
-        log.info("Изменение вещи {} пользователя {}", itemDto, userId);
+        log.info("Change item {}, user {}", itemDto, userId);
 
         itemDto.setId(itemId);
         return itemService.updateItem(userId, itemDto);
     }
 
     @GetMapping
-    public List<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") Integer userId) {
-        log.info("Получение списка вещей.");
+    public List<ItemDto> getItems(@RequestHeader(HEADER_USER_ID) Integer userId) {
+        log.info("Get items by user id {}", userId);
 
         return itemService.getItems(userId);
     }
 
     @GetMapping("/{itemId}")
     public ItemDto getItem(@PathVariable Integer itemId) {
-        log.info("Получение вещи с id {}", itemId);
+        log.info("Get by id {}", itemId);
 
         return itemService.getItem(itemId);
     }
 
     @GetMapping("/search")
     public List<ItemDto> search(@RequestParam String text) {
-        log.info("Поиск вещи по фразе {}", text);
+        log.info("Search item by {}", text);
         String query = text.toLowerCase();
         return itemService.search(query);
     }

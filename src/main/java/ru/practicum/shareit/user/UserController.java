@@ -18,14 +18,14 @@ public class UserController {
 
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
-        log.info("Добавление нового пользователя {}", user);
+        log.info("Add new user {}", user);
 
         return userService.addUser(user);
     }
 
     @PatchMapping("/{userId}")
     public User updateUser(@PathVariable Integer userId, @Valid @RequestBody User user) {
-        log.info("Изменение пользователя {}", user);
+        log.info("Change user {}", user);
 
         user.setId(userId);
         return userService.updateUser(user);
@@ -33,21 +33,21 @@ public class UserController {
 
     @GetMapping
     public List<User> getUsers() {
-        log.info("Получение списка пользователей.");
+        log.info("Get list users.");
 
         return userService.getUsers();
     }
 
     @GetMapping("/{userId}")
-    public User getById(@PathVariable Integer userId) {
-        log.info("Получение пользователя с id {}", userId);
+    public User getUser(@PathVariable Integer userId) {
+        log.info("Get user by id {}", userId);
 
-        return userService.getById(userId);
+        return userService.getUser(userId);
     }
 
     @DeleteMapping("/{userId}")
     public void deleteUser(@PathVariable Integer userId) {
-        log.info("Удаление пользователя с id {}", userId);
+        log.info("Delete user with id {}", userId);
 
         userService.deleteUser(userId);
     }

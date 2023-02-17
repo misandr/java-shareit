@@ -26,7 +26,7 @@ public class UserService {
         return userStorage.getUsers();
     }
 
-    public User getById(Integer userId) {
+    public User getUser(Integer userId) {
         return userStorage.getUser(userId);
     }
 
