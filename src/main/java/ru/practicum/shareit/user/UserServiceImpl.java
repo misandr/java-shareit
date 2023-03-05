@@ -13,7 +13,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
     private final UserRepository repository;
 
     public User addUser(User user) {
@@ -32,41 +32,31 @@ public class UserServiceImpl implements UserService{
             throw new NullValidationException("Email");
         }
 
-//        if (existEmail(user.getEmail())) {
-//            log.warn("Email exists!");
-//            throw new ConflictException("Email exists!");
-//        }
-
         try {
             return repository.save(user);
-        }catch (RuntimeException e){
+        } catch (RuntimeException e) {
             throw new ConflictException("User didn't save!");
         }
     }
 
     public User updateUser(User user) {
-        if(repository.existsById(user.getId())) {
+        if (repository.existsById(user.getId())) {
             User gettedUser = repository.getReferenceById(user.getId());
 
-            if(user.getEmail() != null){
-//                if (existEmail(user.getEmail())) {
-//                    log.warn("Email exists!");
-//                    throw new ConflictException("Email exists!");
-//                }
-
+            if (user.getEmail() != null) {
                 gettedUser.setEmail(user.getEmail());
             }
 
-            if(user.getName() != null){
+            if (user.getName() != null) {
                 gettedUser.setName(user.getName());
             }
 
             try {
                 return repository.save(gettedUser);
-            }catch (RuntimeException e){
+            } catch (RuntimeException e) {
                 throw new ConflictException("User didn't save!");
             }
-        }else{
+        } else {
             log.warn("Not found user " + user.getId());
             throw new UserNotFoundException(user.getId());
         }
@@ -77,18 +67,18 @@ public class UserServiceImpl implements UserService{
     }
 
     public User getUser(Long userId) {
-        if(repository.existsById(userId)) {
+        if (repository.existsById(userId)) {
             return repository.getReferenceById(userId);
-        }else{
+        } else {
             log.warn("Not found user " + userId);
             throw new UserNotFoundException(userId);
         }
     }
 
     public void deleteUser(Long userId) {
-        if(repository.existsById(userId)) {
+        if (repository.existsById(userId)) {
             repository.deleteById(userId);
-        }else{
+        } else {
             log.warn("Not found user " + userId);
             throw new UserNotFoundException(userId);
         }

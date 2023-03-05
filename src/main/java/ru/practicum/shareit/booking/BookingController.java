@@ -20,7 +20,7 @@ public class BookingController {
 
     @PostMapping
     public BookingDto addBooking(@RequestHeader(HEADER_USER_ID) Long userId,
-                           @Valid @RequestBody BookingDto bookingDto) {
+                                 @Valid @RequestBody BookingDto bookingDto) {
         log.info("Add new booking {}, user {}", bookingDto, userId);
 
         return bookingService.addBooking(userId, bookingDto);
@@ -28,8 +28,8 @@ public class BookingController {
 
     @PatchMapping("/{bookingId}")
     public BookingDto setApprove(@RequestHeader(HEADER_USER_ID) Long userId,
-                                     @PathVariable Long bookingId,
-                                     @RequestParam Boolean approved) {
+                                 @PathVariable Long bookingId,
+                                 @RequestParam Boolean approved) {
         log.info("Change booking {}, approved {}, user {}", bookingId, approved, userId);
         return bookingService.setApprove(userId, bookingId, approved);
     }
@@ -44,8 +44,8 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getBookingsByState(@RequestHeader(HEADER_USER_ID) Long userId,
-                                               @RequestParam(required = false)  String state) {
-        if(state == null){
+                                               @RequestParam(required = false) String state) {
+        if (state == null) {
             log.info("Get bookings by state. Count not defined.");
 
             return bookingService.getBookings(userId, "ALL");
@@ -58,7 +58,7 @@ public class BookingController {
     @GetMapping("/owner")
     public List<BookingDto> getBookings(@RequestHeader(HEADER_USER_ID) Long userId,
                                         @RequestParam(required = false) String state) {
-        if(state == null){
+        if (state == null) {
             log.info("Get owner bookings by state. Count not defined. Owner id {}", userId);
 
             return bookingService.getOwnerBookings(userId, "ALL");
