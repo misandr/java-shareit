@@ -1,36 +1,16 @@
 package ru.practicum.shareit.user;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 
-@Service
-public class UserService {
-    private final UserStorage userStorage;
+public interface UserService {
 
-    @Autowired
-    public UserService(UserStorage userStorage) {
-        this.userStorage = userStorage;
-    }
+    User addUser(User user);
 
-    public User addUser(User user) {
-        return userStorage.addUser(user);
-    }
+    User updateUser(User user);
 
-    public User updateUser(User user) {
-        return userStorage.updateUser(user);
-    }
+    List<User> getUsers();
 
-    public List<User> getUsers() {
-        return userStorage.getUsers();
-    }
+    User getUser(Long userId);
 
-    public User getUser(Integer userId) {
-        return userStorage.getUser(userId);
-    }
-
-    public void deleteUser(Integer userId) {
-        userStorage.deleteUser(userId);
-    }
+    void deleteUser(Long userId);
 }
