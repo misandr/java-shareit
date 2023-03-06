@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import ru.practicum.shareit.booking.model.enums.Status;
 import ru.practicum.shareit.item.model.Item;
@@ -12,7 +11,6 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "bookings", schema = "public")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,6 +31,7 @@ public class Booking {
     private User booker;
 
     @Enumerated(EnumType.STRING)
+    @JoinColumn(nullable = false, name = "status")
     private Status status;
 
     @Override

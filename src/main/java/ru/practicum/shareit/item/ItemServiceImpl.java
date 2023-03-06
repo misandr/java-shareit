@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.DateUtils;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingShortInfoDto;
 import ru.practicum.shareit.booking.model.Booking;
@@ -16,7 +17,6 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserServiceImpl;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -181,7 +181,7 @@ public class ItemServiceImpl implements ItemService {
     public CommentDto addComment(Long userId, Long itemId, Comment comment) {
         User user = userService.getUser(userId);
         Item item = getItem(itemId);
-        List<Booking> bookings = bookingRepository.findByItemAndBookerAndStatusEqualsAndStartIsBefore(item, user, Status.APPROVED, LocalDateTime.now());
+        List<Booking> bookings = bookingRepository.findByItemAndBookerAndStatusEqualsAndStartIsBefore(item, user, Status.APPROVED, DateUtils.now());
 
         if (bookings.size() > 0) {
             if (comment.getText().isBlank()) {
@@ -189,7 +189,7 @@ public class ItemServiceImpl implements ItemService {
                 throw new ValidationException("Text of comment is empty!");
             }
 
-            comment.setCreated(LocalDateTime.now());
+            comment.setCreated(DateUtils.now());
             comment.setItem(item);
             comment.setAuthor(user);
             Comment savedComment = commentRepository.save(comment);
@@ -204,7 +204,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private BookingShortInfoDto findLastBooking(Item item) {
-        List<Booking> bookings = bookingRepository.findByItemAndEndIsBeforeOrderByEndDesc(item, LocalDateTime.now());
+        List<Booking> bookings = bookingRepository.findByItemAndEndIsBeforeOrderByEndDesc(item, DateUtils.now());
 
         if (bookings.size() > 0) {
             Booking booking = bookings.get(0);
@@ -221,7 +221,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private BookingShortInfoDto findNextBooking(Item item) {
-        List<Booking> bookings = bookingRepository.findByItemAndStartIsAfterOrderByStartAsc(item, LocalDateTime.now());
+        List<Booking> bookings = bookingRepository.findByItemAndStartIsAfterOrderByStartAsc(item, DateUtils.now());
 
         if (bookings.size() > 0) {
             Booking booking = bookings.get(0);

@@ -9,6 +9,7 @@ import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -67,8 +68,9 @@ public class UserServiceImpl implements UserService {
     }
 
     public User getUser(Long userId) {
-        if (repository.existsById(userId)) {
-            return repository.getReferenceById(userId);
+        Optional<User> user = repository.findById(userId);
+        if (user.isPresent()) {
+            return user.get();
         } else {
             log.warn("Not found user " + userId);
             throw new UserNotFoundException(userId);
@@ -82,14 +84,5 @@ public class UserServiceImpl implements UserService {
             log.warn("Not found user " + userId);
             throw new UserNotFoundException(userId);
         }
-    }
-
-    private boolean existEmail(String email) {
-        for (User user : repository.findAll()) {
-            if (user.getEmail().equals(email))
-                return true;
-        }
-
-        return false;
     }
 }

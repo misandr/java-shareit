@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import ru.practicum.shareit.user.User;
 
@@ -10,7 +9,6 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "comments", schema = "public")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

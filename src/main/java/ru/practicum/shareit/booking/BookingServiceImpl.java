@@ -2,8 +2,8 @@ package ru.practicum.shareit.booking;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.DateUtils;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.enums.Status;
@@ -22,7 +22,6 @@ import java.util.List;
 @Slf4j
 @Service
 @AllArgsConstructor
-@Qualifier("ItemServiceImpl")
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
@@ -43,7 +42,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ValidationException("Item not available!");
         }
 
-        if (booking.getEnd().isBefore(LocalDateTime.now())) {
+        if (booking.getEnd().isBefore(DateUtils.now())) {
             log.warn("End date of booking before now!");
             throw new ValidationException("End date of booking before now!");
         }
@@ -53,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
             throw new ValidationException("End date of booking before start!");
         }
 
-        if (booking.getStart().isBefore(LocalDateTime.now())) {
+        if (booking.getStart().isBefore(DateUtils.now())) {
             log.warn("Start date of booking before now!");
             throw new ValidationException("Start date of booking before now!");
         }
@@ -127,7 +126,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     public List<BookingDto> getBookings(Long userId, String state) {
-        LocalDateTime timeNow = LocalDateTime.now();
+        LocalDateTime timeNow = DateUtils.now();
 
         User user = userService.getUser(userId);
 
@@ -160,7 +159,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     public List<BookingDto> getOwnerBookings(Long userId, String state) {
-        LocalDateTime timeNow = LocalDateTime.now();
+        LocalDateTime timeNow = DateUtils.now();
 
         User user = userService.getUser(userId);
         List<Booking> bookings;
