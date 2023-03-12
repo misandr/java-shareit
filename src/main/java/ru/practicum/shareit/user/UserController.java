@@ -2,7 +2,6 @@ package ru.practicum.shareit.user;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -13,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @RequestMapping(path = "/users")
 public class UserController {
-    @Autowired
+
     private final UserService userService;
 
     @PostMapping
@@ -24,7 +23,7 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public User updateUser(@PathVariable Integer userId, @Valid @RequestBody User user) {
+    public User updateUser(@PathVariable Long userId, @Valid @RequestBody User user) {
         log.info("Change user {}", user);
 
         user.setId(userId);
@@ -39,14 +38,14 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public User getUser(@PathVariable Integer userId) {
+    public User getUser(@PathVariable Long userId) {
         log.info("Get user by id {}", userId);
 
         return userService.getUser(userId);
     }
 
     @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable Integer userId) {
+    public void deleteUser(@PathVariable Long userId) {
         log.info("Delete user with id {}", userId);
 
         userService.deleteUser(userId);
