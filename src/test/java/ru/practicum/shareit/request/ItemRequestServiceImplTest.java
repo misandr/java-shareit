@@ -63,6 +63,29 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    void getOtherItemRequests() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+        User otherUser = userService.addUser(new User(0L, "Петр", "j@j.ru"));
+
+        ItemRequestDto itemRequest = itemRequestService.addItemRequest(otherUser.getId(),
+                new ItemRequestDto(0L, "Дрель", null, null));
+
+        List<ItemRequestDto> sourceItemRequests = List.of(itemRequest);
+
+        List<ItemRequestDto> targetItemRequests = itemRequestService.getOtherItemRequests(user.getId(), 0 ,1);
+
+        assertThat(targetItemRequests, hasSize(sourceItemRequests.size()));
+        for (ItemRequestDto sourceItemRequest : sourceItemRequests) {
+            assertThat(targetItemRequests, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("description", equalTo(sourceItemRequest.getDescription())),
+                    hasProperty("created", notNullValue())
+            )));
+        }
+    }
+
+    @Test
     void getItemRequestDto() {
 
         User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));

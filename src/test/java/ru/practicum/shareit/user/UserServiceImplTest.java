@@ -6,14 +6,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exceptions.NullValidationException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
+import ru.practicum.shareit.exceptions.ValidationException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasProperty;
 
 @Transactional
 @SpringBootTest(
@@ -53,11 +57,29 @@ class UserServiceImplTest {
     @Test
     void getUser() {
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
-        User updatedUser = userService.getUser(user.getId());
+        User gotUser = userService.getUser(user.getId());
 
-        assertThat(updatedUser.getId(), notNullValue());
+        assertThat(gotUser.getId(), notNullValue());
         assertThat(user.getName(), equalTo(user.getName()));
         assertThat(user.getEmail(), equalTo(user.getEmail()));
+    }
+
+    @Test
+    void getUsers() {
+        User user1 = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+        User user2 = userService.addUser(new User(0L, "Петр", "j@j.ru"));
+
+        List<User> sourceItemUsers = List.of(user1, user2);
+        List<User> targetItemUsers = userService.getUsers();
+
+        assertThat(targetItemUsers, hasSize(sourceItemUsers.size()));
+        for (User sourceItemRequest : sourceItemUsers) {
+            assertThat(targetItemUsers, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("name", equalTo(sourceItemRequest.getName())),
+                    hasProperty("email", equalTo(sourceItemRequest.getEmail()))
+            )));
+        }
     }
 
     @Test
@@ -69,5 +91,49 @@ class UserServiceImplTest {
                 () -> userService.getUser(0L));
 
         Assertions.assertEquals("Not found user 0", exception.getMessage());
+    }
+
+    @Test
+    void deleteUser() {
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User gotUser = userService.getUser(user.getId());
+
+        assertThat(gotUser.getId(), notNullValue());
+        assertThat(user.getName(), equalTo(user.getName()));
+        assertThat(user.getEmail(), equalTo(user.getEmail()));
+
+        userService.deleteUser(user.getId());
+
+        final UserNotFoundException exception = Assertions.assertThrows(
+                UserNotFoundException.class,
+                () -> userService.getUser(user.getId()));
+
+        Assertions.assertEquals("Not found user " + user.getId(), exception.getMessage());
+    }
+
+    @Test
+    void addUserBadEmail() {
+        User user = new User();
+        user.setName("Пётр");
+        user.setEmail(null);
+
+        final NullValidationException exception = Assertions.assertThrows(
+                NullValidationException.class,
+                () -> userService.addUser(user));
+
+        Assertions.assertEquals("Email is null!", exception.getMessage());
+    }
+
+    @Test
+    void addUserBadName() {
+        User user = new User();
+        user.setName("");
+        user.setEmail("j@j.ru");
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> userService.addUser(user));
+
+        Assertions.assertEquals("Bad name for user!", exception.getMessage());
     }
 }

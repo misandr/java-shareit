@@ -34,6 +34,7 @@ public class BookingServiceImpl implements BookingService {
     private final ItemServiceImpl itemService;
     private final UserServiceImpl userService;
 
+    @Override
     public BookingDto addBooking(Long userId, BookingDto bookingDto) {
         User user = userService.getUser(userId);
         Item item = itemService.getItem(bookingDto.getItemId());
@@ -81,6 +82,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingDto(addedBooking, itemDto);
     }
 
+    @Override
     public BookingDto setApprove(Long userId, Long bookingId, Boolean approved) {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
         if (booking.isPresent()) {
@@ -120,6 +122,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    @Override
     public BookingDto getBooking(Long userId, Long bookingId) {
         Optional<Booking> booking = bookingRepository.findById(bookingId);
         if (booking.isPresent()) {
@@ -140,6 +143,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    @Override
     public List<BookingDto> getBookings(Long userId, String state, Integer from, Integer size) {
         LocalDateTime timeNow = DateUtils.now();
 
@@ -216,6 +220,7 @@ public class BookingServiceImpl implements BookingService {
         }
     }
 
+    @Override
     public List<BookingDto> getOwnerBookings(Long userId, String state, Integer from, Integer size) {
 
         LocalDateTime timeNow = DateUtils.now();

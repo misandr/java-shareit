@@ -85,7 +85,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
                 itemRequestPage.getContent().forEach(itemRequest -> {
 
-
                     if (!itemRequest.getRequestor().equals(user)) {
                         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest);
 
@@ -99,8 +98,6 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
                         listItemRequests.add(itemRequestDto);
                     }
-
-
                 });
 
                 if (itemRequestPage.hasNext()) {

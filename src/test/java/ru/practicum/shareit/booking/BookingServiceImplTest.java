@@ -103,6 +103,38 @@ class BookingServiceImplTest {
         }
     }
 
+    @Test
+    void getOwnerBookings() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        List<BookingDto> sourceBookings = List.of(
+                new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING)
+        );
+
+        for (BookingDto bookingDto : sourceBookings) {
+            bookingService.addBooking(user.getId(), bookingDto);
+        }
+
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "ALL", 0, 1);
+
+        assertThat(targetBookings, hasSize(sourceBookings.size()));
+        for (BookingDto sourceBooking : sourceBookings) {
+            assertThat(targetBookings, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("itemId", equalTo(sourceBooking.getItemId())),
+                    hasProperty("booker", equalTo(sourceBooking.getBooker())),
+                    hasProperty("status", equalTo(sourceBooking.getStatus()))
+            )));
+        }
+    }
+
     ItemDto makeItemDto(String name, String description) {
         ItemDto itemDto = new ItemDto();
 
