@@ -10,7 +10,10 @@ import ru.practicum.shareit.DateUtils;
 import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.enums.Status;
+import ru.practicum.shareit.exceptions.ForbiddenException;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
+import ru.practicum.shareit.exceptions.NullValidationException;
+import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.User;
@@ -97,7 +100,6 @@ class ItemServiceImplTest {
 
         userService.addUser(user);
 
-
         final ItemNotFoundException exception = Assertions.assertThrows(
                 ItemNotFoundException.class,
                 () -> itemService.getItemDto(user.getId(), 1000L));
@@ -163,6 +165,48 @@ class ItemServiceImplTest {
         assertThat(commentDto.getId(), notNullValue());
         assertThat(commentDto.getCreated(), notNullValue());
         assertThat(commentDto.getText(), equalTo("Good"));
+    }
+
+    @Test
+    void addItemBadName() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        final NullValidationException exception = Assertions.assertThrows(
+                NullValidationException.class,
+                () -> itemService.addItem(user.getId(),
+                        new ItemDto(0L, null, "Good", false,
+                                null, null, null, null)));
+
+        Assertions.assertEquals("Name is null!", exception.getMessage());
+    }
+
+    @Test
+    void addItemBadNameBlank() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.addItem(user.getId(),
+                        new ItemDto(0L, "", "Good", false,
+                                null, null, null, null)));
+
+        Assertions.assertEquals("Name is empty!", exception.getMessage());
+    }
+
+    @Test
+    void updateItemForbidden() {
+        User ownerUser = userService.addUser(new User(0L, "Петр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        ItemDto item = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
+
+        final ForbiddenException exception = Assertions.assertThrows(
+                ForbiddenException.class,
+                () -> itemService.updateItem(user.getId(), item));
+
+        Assertions.assertEquals("Another user!", exception.getMessage());
     }
 
     ItemDto makeItemDto(String name, String description) {
