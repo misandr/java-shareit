@@ -167,6 +167,38 @@ class BookingControllerTest {
     }
 
     @Test
+    void getBookingsByStateNull() throws Exception {
+        User user = createUser("Пётр");
+
+        ItemDto itemDto = createItemDto("Вещь");
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = createBookingDto(start, end, itemDto, user, APPROVED);
+
+        when(bookingService.getBookings(any(), any(), any(), any()))
+                .thenReturn(List.of(bookingDto));
+
+        mvc.perform(get("/bookings")
+                        .header(HEADER_USER_ID, 1)
+                        .param("from", "0")
+                        .param("size", "1")
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].id", is(bookingDto.getId()), Long.class))
+                .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus().toString())))
+                .andExpect(jsonPath("$.[0].item.id", is(itemDto.getId().intValue())))
+                .andExpect(jsonPath("$.[0].item.name", is(itemDto.getName())))
+                .andExpect(jsonPath("$.[0].item.description", is(itemDto.getDescription())))
+                .andExpect(jsonPath("$.[0].booker.id", is(user.getId().intValue())))
+                .andExpect(jsonPath("$.[0].booker.name", is(user.getName())));
+    }
+
+    @Test
     void getBookings() throws Exception {
         User user = createUser("Пётр");
 
@@ -199,6 +231,70 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].booker.name", is(user.getName())));
     }
 
+    @Test
+    void getBookingsByOwner() throws Exception {
+        User user = createUser("Пётр");
+
+        ItemDto itemDto = createItemDto("Вещь");
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = createBookingDto(start, end, itemDto, user, APPROVED);
+
+        when(bookingService.getOwnerBookings(any(), any(), any(), any()))
+                .thenReturn(List.of(bookingDto));
+
+        mvc.perform(get("/bookings/owner")
+                        .header(HEADER_USER_ID, 1)
+                        .param("state", "ALL")
+                        .param("from", "0")
+                        .param("size", "1")
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].id", is(bookingDto.getId()), Long.class))
+                .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus().toString())))
+                .andExpect(jsonPath("$.[0].item.id", is(itemDto.getId().intValue())))
+                .andExpect(jsonPath("$.[0].item.name", is(itemDto.getName())))
+                .andExpect(jsonPath("$.[0].item.description", is(itemDto.getDescription())))
+                .andExpect(jsonPath("$.[0].booker.id", is(user.getId().intValue())))
+                .andExpect(jsonPath("$.[0].booker.name", is(user.getName())));
+    }
+
+    @Test
+    void getBookingsByOwnerByStateNull() throws Exception {
+        User user = createUser("Пётр");
+
+        ItemDto itemDto = createItemDto("Вещь");
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = createBookingDto(start, end, itemDto, user, APPROVED);
+
+        when(bookingService.getOwnerBookings(any(), any(), any(), any()))
+                .thenReturn(List.of(bookingDto));
+
+        mvc.perform(get("/bookings/owner")
+                        .header(HEADER_USER_ID, 1)
+                        .param("from", "0")
+                        .param("size", "1")
+                        .content(mapper.writeValueAsString(bookingDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.[0].id", is(bookingDto.getId()), Long.class))
+                .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus().toString())))
+                .andExpect(jsonPath("$.[0].item.id", is(itemDto.getId().intValue())))
+                .andExpect(jsonPath("$.[0].item.name", is(itemDto.getName())))
+                .andExpect(jsonPath("$.[0].item.description", is(itemDto.getDescription())))
+                .andExpect(jsonPath("$.[0].booker.id", is(user.getId().intValue())))
+                .andExpect(jsonPath("$.[0].booker.name", is(user.getName())));
+    }
 
     BookingDto createBookingDto(LocalDateTime start, LocalDateTime end, ItemDto item, User booker, Status status) {
         BookingDto bookingDto = new BookingDto();

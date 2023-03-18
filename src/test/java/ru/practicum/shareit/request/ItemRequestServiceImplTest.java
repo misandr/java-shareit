@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.ItemRequestNotFoundException;
+import ru.practicum.shareit.exceptions.NullValidationException;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
@@ -110,5 +111,37 @@ class ItemRequestServiceImplTest {
                 () -> itemRequestService.getItemRequestDto(user.getId(), 1000L));
 
         Assertions.assertEquals("Not found request 1000", exception.getMessage());
+    }
+
+    @Test
+    void addItemRequestDescriptionNull() {
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        final NullValidationException exception = Assertions.assertThrows(
+                NullValidationException.class,
+                () -> itemRequestService.addItemRequest(user.getId(),
+                        new ItemRequestDto(0L, null, null, null)));
+
+        Assertions.assertEquals("Description is null!", exception.getMessage());
+    }
+
+    @Test
+    void getOwnItemRequestsBadRange() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        List<ItemRequestDto> targetItemRequests = itemRequestService.getOwnItemRequests(user.getId());
+
+        assertThat(targetItemRequests, hasSize(0));
+    }
+
+    @Test
+    void getOtherItemRequestsBadRange() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        List<ItemRequestDto> targetItemRequests = itemRequestService.getOtherItemRequests(user.getId(), 0, null);
+
+        assertThat(targetItemRequests, hasSize(0));
     }
 }

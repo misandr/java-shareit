@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.DateUtils;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.enums.Status;
+import ru.practicum.shareit.exceptions.BookingNotFoundException;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.ItemService;
@@ -321,7 +322,19 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getBookingsBadId() {
+    void getOwnerBookingsBadRange() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> bookingService.getOwnerBookings(user.getId(), "ALL", 0, 0));
+
+        Assertions.assertEquals("Bad range for bookings!", exception.getMessage());
+    }
+
+    @Test
+    void getBookingBadId() {
 
         User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
 
@@ -330,6 +343,182 @@ class BookingServiceImplTest {
                 () -> bookingService.getBooking(user.getId(), 1000L));
 
         Assertions.assertEquals("Not found item 1000", exception.getMessage());
+    }
+
+    @Test
+    void addBookingEndBefore() {
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().minusHours(2);
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING);
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> bookingService.addBooking(user.getId(), bookingDto));
+
+        Assertions.assertEquals("End date of booking before now!", exception.getMessage());
+    }
+
+    @Test
+    void addBookingEndBeforeStart() {
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(3);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING);
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> bookingService.addBooking(user.getId(), bookingDto));
+
+        Assertions.assertEquals("End date of booking before start!", exception.getMessage());
+    }
+
+    @Test
+    void addBookingStartBefore() {
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().minusHours(3);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING);
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> bookingService.addBooking(user.getId(), bookingDto));
+
+        Assertions.assertEquals("Start date of booking before now!", exception.getMessage());
+    }
+
+    @Test
+    void addBookingEndEqualStart() {
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(3);
+        LocalDateTime end = start;
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING);
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> bookingService.addBooking(user.getId(), bookingDto));
+
+        Assertions.assertEquals("Start equal end!", exception.getMessage());
+    }
+
+    @Test
+    void addBookingUserEqualOwnerUser() {
+        User ownerUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(2);
+        LocalDateTime end = DateUtils.now().plusHours(3);
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, ownerUser, Status.WAITING);
+
+        final ItemNotFoundException exception = Assertions.assertThrows(
+                ItemNotFoundException.class,
+                () -> bookingService.addBooking(ownerUser.getId(), bookingDto));
+
+        Assertions.assertEquals("Not found item " + itemDto.getId(), exception.getMessage());
+    }
+
+    @Test
+    void setApproveAlready() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING);
+
+        BookingDto addedBooking  = bookingService.addBooking(user.getId(), bookingDto);
+
+        bookingService.setApprove(ownUser.getId(), addedBooking.getId(), true);
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> bookingService.setApprove(ownUser.getId(), addedBooking.getId(), true));
+
+        Assertions.assertEquals("Status booking bad!", exception.getMessage());
+    }
+
+    @Test
+    void setApproveUserNotEqualOwnerUser() {
+
+        User ownerUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING);
+
+        BookingDto addedBooking  = bookingService.addBooking(user.getId(), bookingDto);
+
+        final ItemNotFoundException exception = Assertions.assertThrows(
+                ItemNotFoundException.class,
+                () -> bookingService.setApprove(user.getId(), addedBooking.getId(), true));
+
+        Assertions.assertEquals("Not found item " + itemDto.getId(), exception.getMessage());
+    }
+
+    @Test
+    void setApproveNotAvailable() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING);
+
+        BookingDto addedBooking  = bookingService.addBooking(user.getId(), bookingDto);
+
+        bookingService.setApprove(ownUser.getId(), addedBooking.getId(), true);
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> bookingService.setApprove(ownUser.getId(), addedBooking.getId(), true));
+
+        Assertions.assertEquals("Status booking bad!", exception.getMessage());
+    }
+
+    @Test
+    void setApproveBadId() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        final BookingNotFoundException exception = Assertions.assertThrows(
+                BookingNotFoundException.class,
+                () -> bookingService.setApprove(user.getId(), 1000L, true));
+
+        Assertions.assertEquals("Not found booking 1000", exception.getMessage());
     }
 
     ItemDto makeItemDto(String name, String description) {

@@ -136,4 +136,13 @@ class UserServiceImplTest {
 
         Assertions.assertEquals("Bad name for user!", exception.getMessage());
     }
+
+    @Test
+    void deleteUserUnknownId() {
+        final UserNotFoundException exception = Assertions.assertThrows(
+                UserNotFoundException.class,
+                () -> userService.deleteUser(1000L));
+
+        Assertions.assertEquals("Not found user 1000", exception.getMessage());
+    }
 }

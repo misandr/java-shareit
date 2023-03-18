@@ -113,8 +113,8 @@ public class BookingServiceImpl implements BookingService {
 
                 return BookingMapper.toBookingDto(addedBooking, itemDto);
             } else {
-                log.warn("Not found booking " + bookingId);
-                throw new ItemNotFoundException(bookingId);
+                log.warn("Not found item " + item.getId());
+                throw new ItemNotFoundException(item.getId());
             }
         } else {
             log.warn("Not found booking " + bookingId);

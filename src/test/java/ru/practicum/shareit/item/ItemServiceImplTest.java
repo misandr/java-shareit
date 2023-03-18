@@ -51,6 +51,42 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void updateItem() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        ItemDto item = itemService.addItem(user.getId(),
+                new ItemDto(0L, "Дрель", "Good", false,
+                        null, null, null, null));
+
+        ItemDto updatedItem = itemService.updateItem(user.getId(),
+                new ItemDto(item.getId(), "Дрель", "Bad", false,
+                        null, null, null, null));
+
+        assertThat(updatedItem.getId(), notNullValue());
+        assertThat(updatedItem.getName(), equalTo("Дрель"));
+        assertThat(updatedItem.getDescription(), equalTo("Bad"));
+    }
+
+    @Test
+    void updateItemEmptyName() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        ItemDto item = itemService.addItem(user.getId(),
+                new ItemDto(0L, "Дрель", "Good", false,
+                        null, null, null, null));
+
+        ItemDto updatedItem = itemService.updateItem(user.getId(),
+                new ItemDto(item.getId(), null, "Bad", false,
+                        null, null, null, null));
+
+        assertThat(updatedItem.getId(), notNullValue());
+        assertThat(updatedItem.getName(), equalTo("Дрель"));
+        assertThat(updatedItem.getDescription(), equalTo("Bad"));
+    }
+    
+    @Test
     void getItems() {
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
 
@@ -165,6 +201,57 @@ class ItemServiceImplTest {
         assertThat(commentDto.getId(), notNullValue());
         assertThat(commentDto.getCreated(), notNullValue());
         assertThat(commentDto.getText(), equalTo("Good"));
+    }
+
+    @Test
+    void addCommentNoBookings() {
+
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        userService.addUser(user);
+
+        User ownerUser = userService.addUser(new User(0L, "Иван", "j@y.ru"));
+        userService.addUser(user);
+
+        ItemDto item = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.addComment(user.getId(), item.getId(),
+                        new CommentDto(0L, "Good", item.getId(), user.getName(), null)));
+
+        Assertions.assertEquals("No bookings!", exception.getMessage());
+    }
+
+    @Test
+    void addCommentEmpty() {
+
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        userService.addUser(user);
+
+        User ownerUser = userService.addUser(new User(0L, "Иван", "j@y.ru"));
+        userService.addUser(user);
+
+        ItemDto item = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusSeconds(1);
+        LocalDateTime end = DateUtils.now().plusSeconds(2);
+
+        BookingDto booking = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, start, end, item.getId(), item, user, Status.WAITING));
+
+        bookingService.setApprove(ownerUser.getId(), booking.getId(), true);
+        try {
+            Thread.sleep(3000, 0);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.addComment(user.getId(), item.getId(),
+                        new CommentDto(0L, "", item.getId(), user.getName(), null)));
+
+        Assertions.assertEquals("Text of comment is empty!", exception.getMessage());
     }
 
     @Test
