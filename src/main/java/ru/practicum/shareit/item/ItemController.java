@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Comment;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -38,10 +37,12 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getItems(@RequestHeader(HEADER_USER_ID) Long userId) {
+    public List<ItemDto> getItems(@RequestHeader(HEADER_USER_ID) Long userId,
+                                  @RequestParam(required = false) Integer from,
+                                  @RequestParam(required = false) Integer size) {
         log.info("Get items by user id {}", userId);
 
-        return itemService.getItems(userId);
+        return itemService.getItems(userId, from, size);
     }
 
     @GetMapping("/{itemId}")
@@ -52,17 +53,19 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> search(@RequestParam String text) {
+    public List<ItemDto> search(@RequestParam String text,
+                                @RequestParam(required = false) Integer from,
+                                @RequestParam(required = false) Integer size) {
         log.info("Search item by {}", text);
         String query = text.toLowerCase();
-        return itemService.search(query);
+        return itemService.search(query, from, size);
     }
 
     @PostMapping("/{itemId}/comment")
     public CommentDto addComment(@RequestHeader(HEADER_USER_ID) Long userId,
                                  @PathVariable Long itemId,
-                                 @Valid @RequestBody Comment comment) {
-        log.info("Search item by {}", comment);
-        return itemService.addComment(userId, itemId, comment);
+                                 @Valid @RequestBody CommentDto commentDto) {
+        log.info("Search item by {}", commentDto);
+        return itemService.addComment(userId, itemId, commentDto);
     }
 }

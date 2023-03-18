@@ -1,0 +1,50 @@
+package ru.practicum.shareit.request;
+
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
+import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.UserService;
+
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+@Transactional
+@SpringBootTest(
+        properties = "db.name=test",
+        webEnvironment = SpringBootTest.WebEnvironment.NONE)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+class ItemRequestServiceImplTest {
+
+    private final ItemService itemService;
+    private final UserService userService;
+    private final ItemRequestService itemRequestService;
+
+    @Test
+    void getOwnItemRequests() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        ItemRequestDto itemRequest = itemRequestService.addItemRequest(user.getId(),
+                new ItemRequestDto(0L, "Дрель", null, null));
+
+        List<ItemRequestDto> sourceItemRequests = List.of(itemRequest);
+
+        List<ItemRequestDto> targetItemRequests = itemRequestService.getOwnItemRequests(user.getId());
+
+        assertThat(targetItemRequests, hasSize(sourceItemRequests.size()));
+        for (ItemRequestDto sourceItemRequest : sourceItemRequests) {
+            assertThat(targetItemRequests, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("description", equalTo(sourceItemRequest.getDescription())),
+                    hasProperty("created", notNullValue())
+            )));
+        }
+    }
+}

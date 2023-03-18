@@ -3,6 +3,9 @@ package ru.practicum.shareit.item;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.DateUtils;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -19,6 +22,7 @@ import ru.practicum.shareit.user.UserServiceImpl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -93,12 +97,30 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItems(Long userId) {
+    public List<ItemDto> getItems(Long userId, Integer from, Integer size) {
         User user = userService.getUser(userId);
 
         List<ItemDto> listItemDto = new ArrayList<>();
+        List<Item> items;
 
-        List<Item> items = itemRepository.findByOwnerId(userId);
+        if ((from != null) && (size != null)) {
+            if ((from == -1) || (size == -1) || (size == 0)) {
+                log.warn("Bad range for items!");
+                throw new ValidationException("Bad range for items!");
+            }
+            int newFrom = from / size;
+            Pageable page = PageRequest.of(newFrom, size);
+
+            Page<Item> itemssPage = itemRepository.findByOwner(user, page);
+
+            items = itemssPage.getContent();
+        } else if ((from == null) && (size == null)) {
+            items = itemRepository.findByOwner(user);
+        } else {
+            log.warn("Bad range for items!");
+            throw new ValidationException("Bad range for items!");
+        }
+
         for (Item item : items) {
             ItemDto itemDto = ItemMapper.toItemDto(item);
 
@@ -147,8 +169,9 @@ public class ItemServiceImpl implements ItemService {
     }
 
     public Item getItem(Long itemId) {
-        if (itemRepository.existsById(itemId)) {
-            return itemRepository.getReferenceById(itemId);
+        Optional<Item> item = itemRepository.findById(itemId);
+        if (item.isPresent()) {
+            return item.get();
         } else {
             log.warn("Not found item " + itemId);
             throw new ItemNotFoundException(itemId);
@@ -156,47 +179,63 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> search(String query) {
+    public List<ItemDto> search(String query, Integer from, Integer size) {
         List<ItemDto> listItemDto = new ArrayList<>();
 
-        if (!query.isBlank()) {
-            for (Item item : itemRepository.findAll()) {
+        if ((from != null) && (size != null)) {
+            if ((from == -1) || (size == -1) || (size == 0)) {
+                log.warn("Bad range for bookings!");
+                throw new ValidationException("Bad range for bookings!");
+            }
 
-                if (item.isAvailable()) {
-                    if (item.getName().toLowerCase().contains(query)) {
-                        listItemDto.add(ItemMapper.toItemDto(item));
-                        continue;
-                    }
+            if (!query.isBlank()) {
+                int newFrom = from / size;
+                Pageable page = PageRequest.of(newFrom, size);
 
-                    if (item.getDescription().toLowerCase().contains(query)) {
-                        listItemDto.add(ItemMapper.toItemDto(item));
-                    }
+                Page<Item> itemsPage = itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailableIs(query, query, true, page);
+                for (Item item : itemsPage.getContent()) {
+                    listItemDto.add(ItemMapper.toItemDto(item));
                 }
             }
+        } else if ((from == null) && (size == null)) {
+            if (!query.isBlank()) {
+                List<Item> items = itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailableIs(query, query, true);
+                for (Item item : items) {
+                    listItemDto.add(ItemMapper.toItemDto(item));
+                }
+            }
+        } else {
+            log.warn("Bad range for items!");
+            throw new ValidationException("Bad range for items!");
         }
+
         return listItemDto;
     }
 
     @Override
-    public CommentDto addComment(Long userId, Long itemId, Comment comment) {
+    public CommentDto addComment(Long userId, Long itemId, CommentDto commentDto) {
         User user = userService.getUser(userId);
         Item item = getItem(itemId);
         List<Booking> bookings = bookingRepository.findByItemAndBookerAndStatusEqualsAndStartIsBefore(item, user, Status.APPROVED, DateUtils.now());
 
         if (bookings.size() > 0) {
-            if (comment.getText().isBlank()) {
+            if (commentDto.getText().isBlank()) {
                 log.warn("Text of comment is empty!");
                 throw new ValidationException("Text of comment is empty!");
             }
+            Comment comment = new Comment();
 
+            comment.setText(commentDto.getText());
             comment.setCreated(DateUtils.now());
             comment.setItem(item);
             comment.setAuthor(user);
-            Comment savedComment = commentRepository.save(comment);
-            CommentDto commentDto = CommentMapper.toCommentDto(savedComment);
 
-            commentDto.setAuthorName(user.getName());
-            return commentDto;
+            Comment savedComment = commentRepository.save(comment);
+
+            CommentDto savedCommentDto = CommentMapper.toCommentDto(savedComment);
+
+            savedCommentDto.setAuthorName(user.getName());
+            return savedCommentDto;
         } else {
             log.warn("No bookings!");
             throw new ValidationException("No bookings!");
@@ -204,7 +243,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private BookingShortInfoDto findLastBooking(Item item) {
-        List<Booking> bookings = bookingRepository.findByItemAndEndIsBeforeOrderByEndDesc(item, DateUtils.now());
+
+        List<Booking> bookings = bookingRepository.findByItemAndStartIsBeforeOrderByEndDesc(item, DateUtils.now());
 
         if (bookings.size() > 0) {
             Booking booking = bookings.get(0);
