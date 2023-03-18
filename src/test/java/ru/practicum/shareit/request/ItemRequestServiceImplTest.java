@@ -73,7 +73,7 @@ class ItemRequestServiceImplTest {
 
         List<ItemRequestDto> sourceItemRequests = List.of(itemRequest);
 
-        List<ItemRequestDto> targetItemRequests = itemRequestService.getOtherItemRequests(user.getId(), 0 ,1);
+        List<ItemRequestDto> targetItemRequests = itemRequestService.getOtherItemRequests(user.getId(), 0, 1);
 
         assertThat(targetItemRequests, hasSize(sourceItemRequests.size()));
         for (ItemRequestDto sourceItemRequest : sourceItemRequests) {

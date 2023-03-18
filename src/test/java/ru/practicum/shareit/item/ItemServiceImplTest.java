@@ -11,7 +11,6 @@ import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.enums.Status;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
-import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.User;
@@ -153,7 +152,7 @@ class ItemServiceImplTest {
 
         bookingService.setApprove(ownerUser.getId(), booking.getId(), true);
         try {
-            Thread.sleep(3000,0);
+            Thread.sleep(3000, 0);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
