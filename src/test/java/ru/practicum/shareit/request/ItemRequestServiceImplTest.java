@@ -1,11 +1,12 @@
 package ru.practicum.shareit.request;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.item.ItemService;
+import ru.practicum.shareit.exceptions.ItemRequestNotFoundException;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
@@ -22,9 +23,22 @@ import static org.hamcrest.Matchers.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class ItemRequestServiceImplTest {
 
-    private final ItemService itemService;
     private final UserService userService;
     private final ItemRequestService itemRequestService;
+
+    @Test
+    void addItemRequest() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        ItemRequestDto itemRequest = itemRequestService.addItemRequest(user.getId(),
+                new ItemRequestDto(0L, "Дрель", null, null));
+
+        ItemRequestDto addedItemRequest = itemRequestService.addItemRequest(user.getId(), itemRequest);
+
+        assertThat(addedItemRequest.getId(), notNullValue());
+        assertThat(addedItemRequest.getDescription(), equalTo(itemRequest.getDescription()));
+    }
 
     @Test
     void getOwnItemRequests() {
@@ -46,5 +60,32 @@ class ItemRequestServiceImplTest {
                     hasProperty("created", notNullValue())
             )));
         }
+    }
+
+    @Test
+    void getItemRequestDto() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        ItemRequestDto itemRequest = itemRequestService.addItemRequest(user.getId(),
+                new ItemRequestDto(0L, "Дрель", null, null));
+
+        ItemRequestDto addedItemRequest = itemRequestService.addItemRequest(user.getId(), itemRequest);
+
+        ItemRequestDto gotItemRequest = itemRequestService.getItemRequestDto(user.getId(), addedItemRequest.getId());
+
+        assertThat(addedItemRequest.getId(), notNullValue());
+        assertThat(addedItemRequest.getDescription(), equalTo(gotItemRequest.getDescription()));
+    }
+
+    @Test
+    void getUnknownItemRequestDto() {
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        final ItemRequestNotFoundException exception = Assertions.assertThrows(
+                ItemRequestNotFoundException.class,
+                () -> itemRequestService.getItemRequestDto(user.getId(), 1000L));
+
+        Assertions.assertEquals("Not found request 1000", exception.getMessage());
     }
 }

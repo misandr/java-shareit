@@ -31,6 +31,47 @@ class BookingServiceImplTest {
     private final BookingService bookingService;
 
     @Test
+    void addBooking() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING);
+
+        BookingDto addedBooking  = bookingService.addBooking(user.getId(), bookingDto);
+
+        assertThat(addedBooking.getId(), notNullValue());
+        assertThat(addedBooking.getBooker(), equalTo(user));
+        assertThat(addedBooking.getStatus(), equalTo(Status.WAITING));
+    }
+
+    @Test
+    void setApprove() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING);
+
+        BookingDto addedBooking  = bookingService.addBooking(user.getId(), bookingDto);
+
+        BookingDto approvedBooking  = bookingService.setApprove(ownUser.getId(), addedBooking.getId(), true);
+
+        assertThat(approvedBooking.getId(), notNullValue());
+        assertThat(approvedBooking.getStatus(), equalTo(Status.APPROVED));
+    }
+
+    @Test
     void getBookings() {
 
         User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
