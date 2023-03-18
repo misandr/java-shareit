@@ -10,7 +10,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.DateUtils;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
 import java.nio.charset.StandardCharsets;
