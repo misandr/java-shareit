@@ -85,7 +85,7 @@ class ItemServiceImplTest {
         assertThat(updatedItem.getName(), equalTo("Дрель"));
         assertThat(updatedItem.getDescription(), equalTo("Bad"));
     }
-    
+
     @Test
     void getItems() {
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
