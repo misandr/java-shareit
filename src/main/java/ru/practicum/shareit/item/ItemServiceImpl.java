@@ -65,6 +65,12 @@ public class ItemServiceImpl implements ItemService {
         item.setOwner(user);
 
         Item addedItem = itemRepository.save(item);
+        item.setId(addedItem.getId());
+
+        if (!addedItem.equals(item)) {
+            log.warn("Can't add item " + item.getId());
+            throw new ForbiddenException("Can't add item " + item.getId());
+        }
 
         return ItemMapper.toItemDto(addedItem);
     }
