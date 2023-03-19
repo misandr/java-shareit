@@ -150,7 +150,7 @@ public class BookingServiceImpl implements BookingService {
         User user = userService.getUser(userId);
 
         if ((from != null) && (size != null)) {
-            if ((from < 0) || (size <= 0) ) {
+            if ((from < 0) || (size <= 0)) {
                 log.warn("Bad range for bookings!");
                 throw new ValidationException("Bad range for bookings!");
             }
