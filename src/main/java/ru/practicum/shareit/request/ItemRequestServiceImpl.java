@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.DateUtils;
+import ru.practicum.shareit.exceptions.ForbiddenException;
 import ru.practicum.shareit.exceptions.ItemRequestNotFoundException;
 import ru.practicum.shareit.exceptions.NullValidationException;
 import org.springframework.data.domain.Page;
@@ -42,7 +43,14 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         ItemRequest itemRequest = ItemRequestMapper.toItemRequest(itemRequestDto);
         itemRequest.setRequestor(user);
         itemRequest.setCreated(DateUtils.now());
+
         ItemRequest addedItemRequest = itemRequestRepository.save(itemRequest);
+        itemRequest.setId(addedItemRequest.getId());
+
+        if (!addedItemRequest.equals(itemRequest)) {
+            log.warn("Can't add request " + itemRequest.getId());
+            throw new ForbiddenException("Can't add request " + itemRequest.getId());
+        }
 
         return ItemRequestMapper.toItemRequestDto(addedItemRequest);
     }

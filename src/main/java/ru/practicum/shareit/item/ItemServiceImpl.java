@@ -233,7 +233,7 @@ public class ItemServiceImpl implements ItemService {
             Comment savedComment = commentRepository.save(comment);
             if (!savedComment.equals(comment)) {
                 log.warn("Can't add comment " + comment.getId());
-                throw new ForbiddenException("Can't approve comment " + comment.getId());
+                throw new ForbiddenException("Can't add comment " + comment.getId());
             }
 
             CommentDto savedCommentDto = CommentMapper.toCommentDto(savedComment);
