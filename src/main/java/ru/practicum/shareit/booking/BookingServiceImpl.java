@@ -44,6 +44,7 @@ public class BookingServiceImpl implements BookingService {
 
         booking.setBooker(user);
         booking.setItem(item);
+        booking.setStatus(Status.WAITING);
 
         if (!item.isAvailable()) {
             log.warn("Item not available!");
@@ -75,8 +76,6 @@ public class BookingServiceImpl implements BookingService {
             throw new ItemNotFoundException(item.getId());
         }
 
-        booking.setStatus(Status.WAITING);
-        booking.setBooker(user);
         Booking addedBooking = bookingRepository.save(booking);
 
         ItemDto itemDto = ItemMapper.toItemDto(item);

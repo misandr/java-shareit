@@ -131,14 +131,8 @@ public class ItemServiceImpl implements ItemService {
             ItemDto itemDto = ItemMapper.toItemDto(item);
 
             List<Comment> comments = commentRepository.findByItem(item);
-            List<CommentDto> commentsDto = new ArrayList<>();
 
-            for (Comment comment : comments) {
-                CommentDto commentDto = CommentMapper.toCommentDto(comment);
-                commentsDto.add(commentDto);
-            }
-
-            itemDto.setComments(commentsDto);
+            itemDto.setComments(CommentMapper.toCommentsDto(comments));
 
             if (item.getOwner().equals(user)) {
                 itemDto.setLastBooking(findLastBooking(item));
@@ -158,13 +152,8 @@ public class ItemServiceImpl implements ItemService {
         ItemDto itemDto = ItemMapper.toItemDto(item);
 
         List<Comment> comments = commentRepository.findByItem(item);
-        List<CommentDto> commentsDto = new ArrayList<>();
-        for (Comment comment : comments) {
-            CommentDto commentDto = CommentMapper.toCommentDto(comment);
 
-            commentsDto.add(commentDto);
-        }
-        itemDto.setComments(commentsDto);
+        itemDto.setComments(CommentMapper.toCommentsDto(comments));
 
         if (item.getOwner().equals(user)) {
             itemDto.setLastBooking(findLastBooking(item));

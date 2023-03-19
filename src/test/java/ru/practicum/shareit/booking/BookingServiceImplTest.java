@@ -407,6 +407,45 @@ class BookingServiceImplTest {
     }
 
     @Test
+    void getBookingsPast() {
+
+        User ownerUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good", true));
+
+        LocalDateTime start = DateUtils.now().plusSeconds(1);
+        LocalDateTime end = DateUtils.now().plusSeconds(2);
+
+        BookingDto booking = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, start, end,
+                        itemDto.getId(), itemDto, user, Status.WAITING));
+
+
+        booking = bookingService.setApprove(ownerUser.getId(), booking.getId(), true);
+
+        List<BookingDto> sourceBookings = List.of(booking);
+
+        try {
+            Thread.sleep(3000, 0);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "PAST", null, null);
+
+        assertThat(targetBookings, hasSize(sourceBookings.size()));
+        for (BookingDto sourceBooking : sourceBookings) {
+            assertThat(targetBookings, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("itemId", equalTo(sourceBooking.getItemId())),
+                    hasProperty("booker", equalTo(sourceBooking.getBooker())),
+                    hasProperty("status", equalTo(sourceBooking.getStatus()))
+            )));
+        }
+    }
+
+    @Test
     void getBookingsFuture() {
 
         User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
@@ -428,7 +467,6 @@ class BookingServiceImplTest {
 
         List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "FUTURE", null, null);
 
-        assertThat(targetBookings, hasSize(sourceBookings.size()));
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
             assertThat(targetBookings, hasItem(allOf(
@@ -559,6 +597,45 @@ class BookingServiceImplTest {
         List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "CURRENT", 0, 3);
 
         assertThat(targetBookings, hasSize(0));
+    }
+
+    @Test
+    void getBookingsPastPage() {
+
+        User ownerUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good", true));
+
+        LocalDateTime start = DateUtils.now().plusSeconds(1);
+        LocalDateTime end = DateUtils.now().plusSeconds(2);
+
+        BookingDto booking = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, start, end,
+                        itemDto.getId(), itemDto, user, Status.WAITING));
+
+
+        booking = bookingService.setApprove(ownerUser.getId(), booking.getId(), true);
+
+        List<BookingDto> sourceBookings = List.of(booking);
+
+        try {
+            Thread.sleep(3000, 0);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "PAST", 0, 1);
+
+        assertThat(targetBookings, hasSize(sourceBookings.size()));
+        for (BookingDto sourceBooking : sourceBookings) {
+            assertThat(targetBookings, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("itemId", equalTo(sourceBooking.getItemId())),
+                    hasProperty("booker", equalTo(sourceBooking.getBooker())),
+                    hasProperty("status", equalTo(sourceBooking.getStatus()))
+            )));
+        }
     }
 
     @Test
