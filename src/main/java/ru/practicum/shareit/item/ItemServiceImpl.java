@@ -231,6 +231,10 @@ public class ItemServiceImpl implements ItemService {
             comment.setAuthor(user);
 
             Comment savedComment = commentRepository.save(comment);
+            if (!savedComment.equals(comment)) {
+                log.warn("Can't add comment " + comment.getId());
+                throw new ForbiddenException("Can't approve comment " + comment.getId());
+            }
 
             CommentDto savedCommentDto = CommentMapper.toCommentDto(savedComment);
 
