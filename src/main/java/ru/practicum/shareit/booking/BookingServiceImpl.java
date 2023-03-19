@@ -135,11 +135,11 @@ public class BookingServiceImpl implements BookingService {
                 return BookingMapper.toBookingDto(booking.get(), itemDto);
             } else {
                 log.warn("Not found booking" + bookingId);
-                throw new ItemNotFoundException(bookingId);
+                throw new BookingNotFoundException(bookingId);
             }
         } else {
             log.warn("Not found booking " + bookingId);
-            throw new ItemNotFoundException(bookingId);
+            throw new BookingNotFoundException(bookingId);
         }
     }
 
@@ -150,7 +150,7 @@ public class BookingServiceImpl implements BookingService {
         User user = userService.getUser(userId);
 
         if ((from != null) && (size != null)) {
-            if ((from == -1) || (size == -1) || (size == 0)) {
+            if ((from < 0) || (size <= 0) ) {
                 log.warn("Bad range for bookings!");
                 throw new ValidationException("Bad range for bookings!");
             }
@@ -228,7 +228,7 @@ public class BookingServiceImpl implements BookingService {
         User user = userService.getUser(userId);
 
         if ((from != null) && (size != null)) {
-            if ((from == -1) || (size == -1) || (size == 0)) {
+            if ((from < 0) || (size <= 0)) {
                 log.warn("Bad range for bookings!");
                 throw new ValidationException("Bad range for bookings!");
             }
