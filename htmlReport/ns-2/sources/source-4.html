@@ -1,0 +1,128 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BookingRepository</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">ru.practicum.shareit.booking</a>
+</div>
+
+<h1>Coverage Summary for Class: BookingRepository (ru.practicum.shareit.booking)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">BookingRepository</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package ru.practicum.shareit.booking;
+&nbsp;
+&nbsp;import org.springframework.data.domain.Page;
+&nbsp;import org.springframework.data.domain.Pageable;
+&nbsp;import org.springframework.data.repository.PagingAndSortingRepository;
+&nbsp;import ru.practicum.shareit.booking.model.Booking;
+&nbsp;import ru.practicum.shareit.booking.model.enums.Status;
+&nbsp;import ru.practicum.shareit.item.model.Item;
+&nbsp;import ru.practicum.shareit.user.User;
+&nbsp;
+&nbsp;import java.time.LocalDateTime;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;public interface BookingRepository extends PagingAndSortingRepository&lt;Booking, Long&gt; {
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByBookerOrderByStartDesc(User booker);
+&nbsp;
+&nbsp;    Page&lt;Booking&gt; findByBooker(User booker, Pageable pageable);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByBookerAndStatusIs(User booker, Status status);
+&nbsp;
+&nbsp;    Page&lt;Booking&gt; findByBookerAndStatusIs(User booker, Status status, Pageable pageable);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByItemAndBookerAndStatusEqualsAndStartIsBefore(Item item, User booker, Status status, LocalDateTime now);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByBookerAndStartIsBeforeAndEndIsAfterOrderByStartDesc(User booker, LocalDateTime now1, LocalDateTime now2);
+&nbsp;
+&nbsp;    Page&lt;Booking&gt; findByBookerAndStartIsBeforeAndEndIsAfter(User booker, LocalDateTime now1, LocalDateTime now2, Pageable pageable);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByBookerAndEndIsBeforeOrderByStartDesc(User booker, LocalDateTime now);
+&nbsp;
+&nbsp;    Page&lt;Booking&gt; findByBookerAndEndIsBefore(User booker, LocalDateTime now, Pageable pageable);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByBookerAndStartIsAfterOrderByStartDesc(User booker, LocalDateTime now);
+&nbsp;
+&nbsp;    Page&lt;Booking&gt; findByBookerAndStartIsAfter(User booker, LocalDateTime now, Pageable pageable);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByItemOwnerOrderByStartDesc(User owner);
+&nbsp;
+&nbsp;    Page&lt;Booking&gt; findByItemOwner(User owner, Pageable pageable);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByItemOwnerAndStartIsBeforeAndEndIsAfterOrderByStartDesc(User owner, LocalDateTime now1, LocalDateTime now2);
+&nbsp;
+&nbsp;    Page&lt;Booking&gt; findByItemOwnerAndStartIsBeforeAndEndIsAfter(User owner, LocalDateTime now1, LocalDateTime now2, Pageable pageable);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByItemOwnerAndEndIsBeforeOrderByStartDesc(User owner, LocalDateTime now);
+&nbsp;
+&nbsp;    Page&lt;Booking&gt; findByItemOwnerAndEndIsBefore(User owner, LocalDateTime now, Pageable pageable);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByItemOwnerAndStartIsAfterOrderByStartDesc(User owner, LocalDateTime now);
+&nbsp;
+&nbsp;    Page&lt;Booking&gt; findByItemOwnerAndStartIsAfter(User owner, LocalDateTime now, Pageable pageable);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByItemOwnerAndStatusIs(User owner, Status status);
+&nbsp;
+&nbsp;    Page&lt;Booking&gt; findByItemOwnerAndStatusIs(User owner, Status status, Pageable pageable);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByItemAndStartIsBeforeOrderByEndDesc(Item item, LocalDateTime end);
+&nbsp;
+&nbsp;    List&lt;Booking&gt; findByItemAndStartIsAfterOrderByStartAsc(Item item, LocalDateTime start);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-03-19 15:02</div>
+</div>
+</body>
+</html>

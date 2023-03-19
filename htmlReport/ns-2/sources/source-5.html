@@ -1,0 +1,103 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > BookingService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">ru.practicum.shareit.booking</a>
+</div>
+
+<h1>Coverage Summary for Class: BookingService (ru.practicum.shareit.booking)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">BookingService$MockitoMock$1wvWFGQB</td>
+  </tr>
+  <tr>
+    <td class="name">BookingService$MockitoMock$1wvWFGQB$auxiliary$aDSIpOv1</td>
+  </tr>
+  <tr>
+    <td class="name">BookingService$MockitoMock$1wvWFGQB$auxiliary$NdiEnJul</td>
+  </tr>
+  <tr>
+    <td class="name">BookingService$MockitoMock$kuq4iULO</td>
+  </tr>
+  <tr>
+    <td class="name">BookingService$MockitoMock$kuq4iULO$auxiliary$GqN3h0xg</td>
+  </tr>
+  <tr>
+    <td class="name">BookingService$MockitoMock$kuq4iULO$auxiliary$L9EFxChA</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package ru.practicum.shareit.booking;
+&nbsp;
+&nbsp;import ru.practicum.shareit.booking.dto.BookingDto;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;public interface BookingService {
+&nbsp;
+&nbsp;    BookingDto addBooking(Long userId, BookingDto booking);
+&nbsp;
+&nbsp;    BookingDto setApprove(Long userId, Long bookingId, Boolean approved);
+&nbsp;
+&nbsp;    BookingDto getBooking(Long userId, Long itemId);
+&nbsp;
+&nbsp;    List&lt;BookingDto&gt; getBookings(Long userId, String state, Integer from, Integer size);
+&nbsp;
+&nbsp;    List&lt;BookingDto&gt; getOwnerBookings(Long userId, String state, Integer from, Integer size);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-03-19 15:02</div>
+</div>
+</body>
+</html>

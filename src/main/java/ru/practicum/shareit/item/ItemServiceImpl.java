@@ -104,7 +104,7 @@ public class ItemServiceImpl implements ItemService {
         List<Item> items;
 
         if ((from != null) && (size != null)) {
-            if ((from == -1) || (size == -1) || (size == 0)) {
+            if ((from < 0) || (size <= 0)) {
                 log.warn("Bad range for items!");
                 throw new ValidationException("Bad range for items!");
             }
@@ -183,7 +183,7 @@ public class ItemServiceImpl implements ItemService {
         List<ItemDto> listItemDto = new ArrayList<>();
 
         if ((from != null) && (size != null)) {
-            if ((from == -1) || (size == -1) || (size == 0)) {
+            if ((from < 0) || (size <= 0)) {
                 log.warn("Bad range for bookings!");
                 throw new ValidationException("Bad range for bookings!");
             }

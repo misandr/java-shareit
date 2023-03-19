@@ -76,7 +76,28 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getBookings() {
+    void setApproveRejected() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        BookingDto bookingDto = new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING);
+
+        BookingDto addedBooking  = bookingService.addBooking(user.getId(), bookingDto);
+
+        BookingDto approvedBooking  = bookingService.setApprove(ownUser.getId(), addedBooking.getId(), false);
+
+        assertThat(approvedBooking.getId(), notNullValue());
+        assertThat(approvedBooking.getStatus(), equalTo(Status.REJECTED));
+    }
+
+    @Test
+    void getBookingsPage() {
 
         User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
         User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
@@ -108,7 +129,39 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getOwnerBookings() {
+    void getBookings() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        List<BookingDto> sourceBookings = List.of(
+                new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING)
+        );
+
+        for (BookingDto bookingDto : sourceBookings) {
+            bookingService.addBooking(user.getId(), bookingDto);
+        }
+
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "ALL", null, null);
+
+        assertThat(targetBookings, hasSize(sourceBookings.size()));
+        for (BookingDto sourceBooking : sourceBookings) {
+            assertThat(targetBookings, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("itemId", equalTo(sourceBooking.getItemId())),
+                    hasProperty("booker", equalTo(sourceBooking.getBooker())),
+                    hasProperty("status", equalTo(sourceBooking.getStatus()))
+            )));
+        }
+    }
+
+    @Test
+    void getOwnerBookingsPage() {
 
         User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
         User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
@@ -140,7 +193,39 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getBookingsCurrent() {
+    void getOwnerBookings() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        List<BookingDto> sourceBookings = List.of(
+                new BookingDto(1L, start, end, itemDto.getId(), itemDto, user, Status.WAITING)
+        );
+
+        for (BookingDto bookingDto : sourceBookings) {
+            bookingService.addBooking(user.getId(), bookingDto);
+        }
+
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "ALL", null, null);
+
+        assertThat(targetBookings, hasSize(sourceBookings.size()));
+        for (BookingDto sourceBooking : sourceBookings) {
+            assertThat(targetBookings, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("itemId", equalTo(sourceBooking.getItemId())),
+                    hasProperty("booker", equalTo(sourceBooking.getBooker())),
+                    hasProperty("status", equalTo(sourceBooking.getStatus()))
+            )));
+        }
+    }
+
+    @Test
+    void getBookingsCurrentPage() {
 
         User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
         User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
@@ -163,7 +248,30 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getBookingsFuture() {
+    void getBookingsCurrent() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        BookingDto booking1 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, DateUtils.now().plusHours(1), DateUtils.now().plusHours(2),
+                        itemDto.getId(), itemDto, user, Status.WAITING));
+        BookingDto booking2 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, DateUtils.now().plusHours(2), DateUtils.now().plusHours(3),
+                        itemDto.getId(), itemDto, user, Status.WAITING));
+        BookingDto booking3 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, DateUtils.now().plusHours(3), DateUtils.now().plusHours(4),
+                        itemDto.getId(), itemDto, user, Status.WAITING));
+
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "CURRENT", null, null);
+
+        assertThat(targetBookings, hasSize(0));
+    }
+
+    @Test
+    void getBookingsFuturePage() {
 
         User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
         User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
@@ -197,7 +305,7 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getBookingsWaiting() {
+    void getBookingsFuture() {
 
         User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
         User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
@@ -216,7 +324,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1, booking2, booking3);
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "WAITING", 0, 3);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "FUTURE", null, null);
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         assertThat(targetBookings, hasSize(sourceBookings.size()));
@@ -231,7 +339,7 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getBookingsRejected() {
+    void getBookingsRejectedPage() {
 
         User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
         User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
@@ -264,7 +372,40 @@ class BookingServiceImplTest {
     }
 
     @Test
-    void getBookingsWaitingInPages() {
+    void getBookingsRejected() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        BookingDto booking1 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, DateUtils.now().plusHours(1), DateUtils.now().plusHours(2),
+                        itemDto.getId(), itemDto, user, Status.WAITING));
+        BookingDto booking2 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, DateUtils.now().plusHours(2), DateUtils.now().plusHours(3),
+                        itemDto.getId(), itemDto, user, Status.WAITING));
+
+        booking1 = bookingService.setApprove(ownUser.getId(), booking1.getId(), false);
+        booking2 = bookingService.setApprove(ownUser.getId(), booking2.getId(), true);
+
+        List<BookingDto> sourceBookings = List.of(booking1);
+
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "REJECTED", null, null);
+
+        assertThat(targetBookings, hasSize(sourceBookings.size()));
+        for (BookingDto sourceBooking : sourceBookings) {
+            assertThat(targetBookings, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("itemId", equalTo(sourceBooking.getItemId())),
+                    hasProperty("booker", equalTo(sourceBooking.getBooker())),
+                    hasProperty("status", equalTo(sourceBooking.getStatus()))
+            )));
+        }
+    }
+
+    @Test
+    void getBookingsWaitingPage() {
 
         User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
         User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
@@ -286,6 +427,39 @@ class BookingServiceImplTest {
         List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "WAITING", 0, 1);
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
+        assertThat(targetBookings, hasSize(sourceBookings.size()));
+        for (BookingDto sourceBooking : sourceBookings) {
+            assertThat(targetBookings, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("itemId", equalTo(sourceBooking.getItemId())),
+                    hasProperty("booker", equalTo(sourceBooking.getBooker())),
+                    hasProperty("status", equalTo(sourceBooking.getStatus()))
+            )));
+        }
+    }
+
+    @Test
+    void getBookingsWaiting() {
+
+        User ownUser = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@j1.ru"));
+
+        ItemDto itemDto = itemService.addItem(ownUser.getId(), makeItemDto("Item 1", "Good"));
+
+        BookingDto booking1 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, DateUtils.now().plusHours(1), DateUtils.now().plusHours(2),
+                        itemDto.getId(), itemDto, user, Status.WAITING));
+        BookingDto booking2 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, DateUtils.now().plusHours(2), DateUtils.now().plusHours(3),
+                        itemDto.getId(), itemDto, user, Status.WAITING));
+        BookingDto booking3 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, DateUtils.now().plusHours(3), DateUtils.now().plusHours(4),
+                        itemDto.getId(), itemDto, user, Status.WAITING));
+
+        List<BookingDto> sourceBookings = List.of(booking1, booking2, booking3);
+
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "WAITING", null, null);
+
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
             assertThat(targetBookings, hasItem(allOf(

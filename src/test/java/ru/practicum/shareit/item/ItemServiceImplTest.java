@@ -10,10 +10,7 @@ import ru.practicum.shareit.DateUtils;
 import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.enums.Status;
-import ru.practicum.shareit.exceptions.ForbiddenException;
-import ru.practicum.shareit.exceptions.ItemNotFoundException;
-import ru.practicum.shareit.exceptions.NullValidationException;
-import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.exceptions.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.User;
@@ -51,6 +48,76 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void addItemNullName() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        final NullValidationException exception = Assertions.assertThrows(
+                NullValidationException.class,
+                () -> itemService.addItem(user.getId(),
+                        new ItemDto(0L, null, "Good", false,
+                                null, null, null, null)));
+
+        Assertions.assertEquals("Name is null!", exception.getMessage());
+    }
+
+    @Test
+    void addItemBlankName() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.addItem(user.getId(),
+                        new ItemDto(0L, "", "Good", false,
+                                null, null, null, null)));
+
+        Assertions.assertEquals("Name is empty!", exception.getMessage());
+    }
+
+    @Test
+    void addItemBadNameBlank() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.addItem(user.getId(),
+                        new ItemDto(0L, "", "Good", false,
+                                null, null, null, null)));
+
+        Assertions.assertEquals("Name is empty!", exception.getMessage());
+    }
+
+    @Test
+    void addItemNullAvailable() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        final NullValidationException exception = Assertions.assertThrows(
+                NullValidationException.class,
+                () -> itemService.addItem(user.getId(),
+                        new ItemDto(0L, "Вещь", "Good", null,
+                                null, null, null, null)));
+
+        Assertions.assertEquals("Available is null!", exception.getMessage());
+    }
+
+    @Test
+    void addItemNullDescription() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        final NullValidationException exception = Assertions.assertThrows(
+                NullValidationException.class,
+                () -> itemService.addItem(user.getId(),
+                        new ItemDto(0L, "Вещь", null, false,
+                                null, null, null, null)));
+
+        Assertions.assertEquals("Description is null!", exception.getMessage());
+    }
+
+    @Test
     void updateItem() {
 
         User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
@@ -69,6 +136,20 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void updateItemForbidden() {
+        User ownerUser = userService.addUser(new User(0L, "Петр", "j@j.ru"));
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        ItemDto item = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
+
+        final ForbiddenException exception = Assertions.assertThrows(
+                ForbiddenException.class,
+                () -> itemService.updateItem(user.getId(), item));
+
+        Assertions.assertEquals("Another user!", exception.getMessage());
+    }
+
+    @Test
     void updateItemEmptyName() {
 
         User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
@@ -84,6 +165,42 @@ class ItemServiceImplTest {
         assertThat(updatedItem.getId(), notNullValue());
         assertThat(updatedItem.getName(), equalTo("Дрель"));
         assertThat(updatedItem.getDescription(), equalTo("Bad"));
+    }
+
+    @Test
+    void updateItemEmptyDescripton() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        ItemDto item = itemService.addItem(user.getId(),
+                new ItemDto(0L, "Дрель", "Good", false,
+                        null, null, null, null));
+
+        ItemDto updatedItem = itemService.updateItem(user.getId(),
+                new ItemDto(item.getId(), "Дрель 1", null, false,
+                        null, null, null, null));
+
+        assertThat(updatedItem.getId(), notNullValue());
+        assertThat(updatedItem.getName(), equalTo("Дрель 1"));
+        assertThat(updatedItem.getDescription(), equalTo("Good"));
+    }
+
+    @Test
+    void updateItemEmptyAvailable() {
+
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        ItemDto item = itemService.addItem(user.getId(),
+                new ItemDto(0L, "Дрель", "Good", false,
+                        null, null, null, null));
+
+        ItemDto updatedItem = itemService.updateItem(user.getId(),
+                new ItemDto(item.getId(), "Дрель 1", "Good", null,
+                        null, null, null, null));
+
+        assertThat(updatedItem.getId(), notNullValue());
+        assertThat(updatedItem.getName(), equalTo("Дрель 1"));
+        assertThat(updatedItem.getDescription(), equalTo("Good"));
     }
 
     @Test
@@ -116,7 +233,49 @@ class ItemServiceImplTest {
     }
 
     @Test
-    void getItem() {
+    void getItemsNullRange() {
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+
+        userService.addUser(user);
+
+        List<ItemDto> sourceItems = List.of(
+                makeItemDto("Item 1", "Good"),
+                makeItemDto("Item 2", "Bad"),
+                makeItemDto("Item 3", "Good")
+        );
+
+        for (ItemDto itemDto : sourceItems) {
+            itemService.addItem(user.getId(), itemDto);
+        }
+
+        List<ItemDto> targetItems = itemService.getItems(user.getId(), null, null);
+
+        assertThat(targetItems, hasSize(sourceItems.size()));
+        for (ItemDto sourceItem : sourceItems) {
+            assertThat(targetItems, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("name", equalTo(sourceItem.getName())),
+                    hasProperty("description", equalTo(sourceItem.getDescription())),
+                    hasProperty("available", equalTo(sourceItem.getAvailable()))
+            )));
+        }
+    }
+
+    @Test
+    void getItemsBadRange() {
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+
+        userService.addUser(user);
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.getItems(user.getId(), null, 1));
+
+        Assertions.assertEquals("Bad range for items!", exception.getMessage());
+    }
+
+    @Test
+    void getItemDto() {
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
 
         userService.addUser(user);
@@ -169,6 +328,22 @@ class ItemServiceImplTest {
                     hasProperty("available", equalTo(sourceItem.getAvailable()))
             )));
         }
+    }
+
+    @Test
+    void searchEmpty() {
+        List<ItemDto> targetItems = itemService.search("Bad", 0, 2);
+
+        assertThat(targetItems, hasSize(0));
+    }
+
+    @Test
+    void searchBadRange() {
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> itemService.search("Bad", 0, -1));
+
+        Assertions.assertEquals("Bad range for bookings!", exception.getMessage());
     }
 
     @Test
@@ -252,48 +427,6 @@ class ItemServiceImplTest {
                         new CommentDto(0L, "", item.getId(), user.getName(), null)));
 
         Assertions.assertEquals("Text of comment is empty!", exception.getMessage());
-    }
-
-    @Test
-    void addItemBadName() {
-
-        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
-
-        final NullValidationException exception = Assertions.assertThrows(
-                NullValidationException.class,
-                () -> itemService.addItem(user.getId(),
-                        new ItemDto(0L, null, "Good", false,
-                                null, null, null, null)));
-
-        Assertions.assertEquals("Name is null!", exception.getMessage());
-    }
-
-    @Test
-    void addItemBadNameBlank() {
-
-        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
-
-        final ValidationException exception = Assertions.assertThrows(
-                ValidationException.class,
-                () -> itemService.addItem(user.getId(),
-                        new ItemDto(0L, "", "Good", false,
-                                null, null, null, null)));
-
-        Assertions.assertEquals("Name is empty!", exception.getMessage());
-    }
-
-    @Test
-    void updateItemForbidden() {
-        User ownerUser = userService.addUser(new User(0L, "Петр", "j@j.ru"));
-        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
-
-        ItemDto item = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
-
-        final ForbiddenException exception = Assertions.assertThrows(
-                ForbiddenException.class,
-                () -> itemService.updateItem(user.getId(), item));
-
-        Assertions.assertEquals("Another user!", exception.getMessage());
     }
 
     ItemDto makeItemDto(String name, String description) {

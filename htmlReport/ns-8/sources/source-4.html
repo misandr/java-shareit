@@ -1,0 +1,102 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ItemRequestService</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">ru.practicum.shareit.request</a>
+</div>
+
+<h1>Coverage Summary for Class: ItemRequestService (ru.practicum.shareit.request)</h1>
+
+<table class="coverageStats">
+
+<tr>
+  <th class="name">Class</th>
+</tr>
+  <tr>
+    <td class="name">ItemRequestService$MockitoMock$85P3lZtl</td>
+  </tr>
+  <tr>
+    <td class="name">ItemRequestService$MockitoMock$85P3lZtl$auxiliary$XHmo1Kmv</td>
+  </tr>
+  <tr>
+    <td class="name">ItemRequestService$MockitoMock$85P3lZtl$auxiliary$ZjC4MxrY</td>
+  </tr>
+  <tr>
+    <td class="name">ItemRequestService$MockitoMock$PCUFv1dx</td>
+  </tr>
+  <tr>
+    <td class="name">ItemRequestService$MockitoMock$PCUFv1dx$auxiliary$9J0JCGWE</td>
+  </tr>
+  <tr>
+    <td class="name">ItemRequestService$MockitoMock$PCUFv1dx$auxiliary$gmkp1VmR</td>
+  </tr>
+<tr>
+  <td class="name"><strong>Total</strong></td>
+</tr>
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package ru.practicum.shareit.request;
+&nbsp;
+&nbsp;import ru.practicum.shareit.request.dto.ItemRequestDto;
+&nbsp;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;
+&nbsp;public interface ItemRequestService {
+&nbsp;
+&nbsp;    ItemRequestDto addItemRequest(Long userId, ItemRequestDto itemRequestDto);
+&nbsp;
+&nbsp;    List&lt;ItemRequestDto&gt; getOwnItemRequests(Long userId);
+&nbsp;
+&nbsp;    List&lt;ItemRequestDto&gt; getOtherItemRequests(Long userId, Integer from, Integer size);
+&nbsp;
+&nbsp;    ItemRequestDto getItemRequestDto(Long userId, Long itemId);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2023-03-19 15:02</div>
+</div>
+</body>
+</html>

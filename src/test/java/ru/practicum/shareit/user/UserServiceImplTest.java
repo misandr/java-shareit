@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exceptions.ConflictException;
 import ru.practicum.shareit.exceptions.NullValidationException;
 import ru.practicum.shareit.exceptions.UserNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
@@ -45,6 +46,55 @@ class UserServiceImplTest {
     }
 
     @Test
+    void addUserNull() {
+        User user = new User();
+        user.setName("Пётр");
+        user.setEmail(null);
+
+        final NullValidationException exception = Assertions.assertThrows(
+                NullValidationException.class,
+                () -> userService.addUser(null));
+
+        Assertions.assertEquals("User is null!", exception.getMessage());
+    }
+
+    @Test
+    void addUserNullEmail() {
+        User user = new User();
+        user.setName("Пётр");
+        user.setEmail(null);
+
+        final NullValidationException exception = Assertions.assertThrows(
+                NullValidationException.class,
+                () -> userService.addUser(user));
+
+        Assertions.assertEquals("Email is null!", exception.getMessage());
+    }
+
+    @Test
+    void addUserBadEmail() {
+
+        final ConflictException exception = Assertions.assertThrows(
+                ConflictException.class,
+                () -> userService.addUser(new User(0L, "Иван", "ji.ru")));
+
+        Assertions.assertEquals("User didn't save!", exception.getMessage());
+    }
+
+    @Test
+    void addUserBadName() {
+        User user = new User();
+        user.setName("");
+        user.setEmail("j@j.ru");
+
+        final ValidationException exception = Assertions.assertThrows(
+                ValidationException.class,
+                () -> userService.addUser(user));
+
+        Assertions.assertEquals("Bad name for user!", exception.getMessage());
+    }
+
+    @Test
     void updateUser() {
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
         User updatedUser = userService.updateUser(new User(user.getId(), "Иван", "j@j1.ru"));
@@ -52,6 +102,30 @@ class UserServiceImplTest {
         assertThat(updatedUser.getId(), notNullValue());
         assertThat(updatedUser.getName(), equalTo("Иван"));
         assertThat(updatedUser.getEmail(), equalTo("j@j1.ru"));
+    }
+
+    @Test
+    void updateUserEmailNull() {
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User updatedUser = userService.updateUser(new User(user.getId(), "Иван", null));
+
+        assertThat(updatedUser.getId(), notNullValue());
+        assertThat(updatedUser.getName(), equalTo("Иван"));
+        assertThat(updatedUser.getEmail(), equalTo("j@j.ru"));
+    }
+
+    @Test
+    void updateUserBadId() {
+        User user = new User();
+        user.setId(1000L);
+        user.setName("Фёдор");
+        user.setEmail("j@j.ru");
+
+        final UserNotFoundException exception = Assertions.assertThrows(
+                UserNotFoundException.class,
+                () -> userService.updateUser(user));
+
+        Assertions.assertEquals("Not found user 1000", exception.getMessage());
     }
 
     @Test
@@ -109,32 +183,6 @@ class UserServiceImplTest {
                 () -> userService.getUser(user.getId()));
 
         Assertions.assertEquals("Not found user " + user.getId(), exception.getMessage());
-    }
-
-    @Test
-    void addUserBadEmail() {
-        User user = new User();
-        user.setName("Пётр");
-        user.setEmail(null);
-
-        final NullValidationException exception = Assertions.assertThrows(
-                NullValidationException.class,
-                () -> userService.addUser(user));
-
-        Assertions.assertEquals("Email is null!", exception.getMessage());
-    }
-
-    @Test
-    void addUserBadName() {
-        User user = new User();
-        user.setName("");
-        user.setEmail("j@j.ru");
-
-        final ValidationException exception = Assertions.assertThrows(
-                ValidationException.class,
-                () -> userService.addUser(user));
-
-        Assertions.assertEquals("Bad name for user!", exception.getMessage());
     }
 
     @Test
