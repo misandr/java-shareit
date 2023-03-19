@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import ru.practicum.shareit.DateUtils;
+import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.NullValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -73,6 +74,21 @@ class ItemControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().is(400));
+    }
+
+    @Test
+    void addItemWithNotFoundException() throws Exception {
+        when(itemService.addItem(any(), any()))
+                .thenThrow(NotFoundException.class);
+
+        mvc.perform(post("/ite")
+                        .header(HEADER_USER_ID, 1)
+                        .content(mapper.writeValueAsString(null))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(404));
     }
 
     @Test

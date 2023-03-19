@@ -13,6 +13,7 @@ import ru.practicum.shareit.booking.model.enums.Status;
 import ru.practicum.shareit.exceptions.*;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserService;
 
@@ -207,8 +208,6 @@ class ItemServiceImplTest {
     void getItems() {
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
 
-        userService.addUser(user);
-
         List<ItemDto> sourceItems = List.of(
                 makeItemDto("Item 1", "Good"),
                 makeItemDto("Item 2", "Bad"),
@@ -235,8 +234,6 @@ class ItemServiceImplTest {
     @Test
     void getItemsNullRange() {
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
-
-        userService.addUser(user);
 
         List<ItemDto> sourceItems = List.of(
                 makeItemDto("Item 1", "Good"),
@@ -265,8 +262,6 @@ class ItemServiceImplTest {
     void getItemsBadRange() {
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
 
-        userService.addUser(user);
-
         final ValidationException exception = Assertions.assertThrows(
                 ValidationException.class,
                 () -> itemService.getItems(user.getId(), null, 1));
@@ -278,11 +273,81 @@ class ItemServiceImplTest {
     void getItemDto() {
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
 
+        ItemDto item = itemService.addItem(user.getId(), makeItemDto("Item 1", "Good"));
+
+        ItemDto gotItem = itemService.getItemDto(user.getId(), item.getId());
+
+        assertThat(gotItem.getId(), notNullValue());
+        assertThat(gotItem.getName(), equalTo(item.getName()));
+        assertThat(gotItem.getDescription(), equalTo(item.getDescription()));
+    }
+
+    @Test
+    void getItemDtoWithCommits() {
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User ownerUser = userService.addUser(new User(0L, "Иван", "j@y.ru"));
+
+        ItemDto item = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusSeconds(1);
+        LocalDateTime end = DateUtils.now().plusSeconds(2);
+
+        BookingDto booking = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, start, end, item.getId(), item, user, Status.WAITING));
+
+        bookingService.setApprove(ownerUser.getId(), booking.getId(), true);
+
+        try {
+            Thread.sleep(3000, 0);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        CommentDto commentDto = itemService.addComment(user.getId(), item.getId(),
+                new CommentDto(0L, "Good", item.getId(), user.getName(), null));
+
+        ItemDto gotItem = itemService.getItemDto(ownerUser.getId(), item.getId());
+
+        List<CommentDto> sourceCommentsDto = List.of(commentDto);
+
+        assertThat(gotItem.getId(), notNullValue());
+        assertThat(gotItem.getName(), equalTo(item.getName()));
+        assertThat(gotItem.getDescription(), equalTo(item.getDescription()));
+        assertThat(gotItem.getLastBooking(), notNullValue());
+
+        assertThat(gotItem.getComments(), hasSize(sourceCommentsDto.size()));
+        for (CommentDto sourceComment : sourceCommentsDto) {
+            assertThat(gotItem.getComments(), hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("text", equalTo(sourceComment.getText())),
+                    hasProperty("authorName", equalTo(sourceComment.getAuthorName())),
+                    hasProperty("created", equalTo(sourceComment.getCreated()))
+            )));
+        }
+    }
+
+    @Test
+    void getUnknownItemDto() {
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+
+        userService.addUser(user);
+
+        final ItemNotFoundException exception = Assertions.assertThrows(
+                ItemNotFoundException.class,
+                () -> itemService.getItemDto(user.getId(), 1000L));
+
+        Assertions.assertEquals("Not found item 1000", exception.getMessage());
+    }
+
+    @Test
+    void getItem() {
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+
         userService.addUser(user);
 
         ItemDto item = itemService.addItem(user.getId(), makeItemDto("Item 1", "Good"));
 
-        ItemDto gotItem = itemService.getItemDto(user.getId(), item.getId());
+        Item gotItem = itemService.getItem(item.getId());
 
         assertThat(gotItem.getId(), notNullValue());
         assertThat(gotItem.getName(), equalTo(item.getName()));
@@ -297,7 +362,7 @@ class ItemServiceImplTest {
 
         final ItemNotFoundException exception = Assertions.assertThrows(
                 ItemNotFoundException.class,
-                () -> itemService.getItemDto(user.getId(), 1000L));
+                () -> itemService.getItem(1000L));
 
         Assertions.assertEquals("Not found item 1000", exception.getMessage());
     }
@@ -401,10 +466,8 @@ class ItemServiceImplTest {
     void addCommentEmpty() {
 
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
-        userService.addUser(user);
 
         User ownerUser = userService.addUser(new User(0L, "Иван", "j@y.ru"));
-        userService.addUser(user);
 
         ItemDto item = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
 
@@ -427,6 +490,21 @@ class ItemServiceImplTest {
                         new CommentDto(0L, "", item.getId(), user.getName(), null)));
 
         Assertions.assertEquals("Text of comment is empty!", exception.getMessage());
+    }
+
+    @Test
+    void addCommentUnknownUser() {
+
+        User ownerUser = userService.addUser(new User(0L, "Иван", "j@y.ru"));
+
+        ItemDto item = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
+
+        final UserNotFoundException exception = Assertions.assertThrows(
+                UserNotFoundException.class,
+                () -> itemService.addComment(1000L, item.getId(),
+                        new CommentDto(0L, "", item.getId(), ownerUser.getName(), null)));
+
+        Assertions.assertEquals("Not found user 1000", exception.getMessage());
     }
 
     ItemDto makeItemDto(String name, String description) {

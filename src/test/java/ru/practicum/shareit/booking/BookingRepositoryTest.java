@@ -64,4 +64,36 @@ public class BookingRepositoryTest {
             )));
         }
     }
+
+    @Test
+    void findByBookerAndStatusIsTest() {
+        User user = userRepository.save(new User(1L, "Иван","q@q.net"));
+        User ownUser = userRepository.save(new User(0L, "Пётр", "j@j.ru"));
+
+        Item item1 = itemRepository.save(
+                new Item(0L, "Item 1", "Good", true, ownUser, 0L));
+
+        Item item2 = itemRepository.save(
+                new Item(0L, "Item 2", "Good", true, ownUser, 0L));
+
+        LocalDateTime start = DateUtils.now().plusHours(1);
+        LocalDateTime end = DateUtils.now().plusHours(2);
+
+        Booking booking1 = bookingRepository.save(new Booking(0L, start, end, item1, user, Status.WAITING));
+        Booking booking2 = bookingRepository.save(new Booking(0L, start, end, item1, user, Status.REJECTED));
+
+        List<Booking> sourceBookings = List.of(booking1);
+
+        List<Booking> bookings = bookingRepository.findByBookerAndStatusIs(user, Status.WAITING);
+
+        assertThat(bookings, hasSize(bookings.size()));
+        for (Booking sourceBooking : sourceBookings) {
+            assertThat(bookings, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("start", equalTo(sourceBooking.getStart())),
+                    hasProperty("end", equalTo(sourceBooking.getEnd())),
+                    hasProperty("booker", equalTo(sourceBooking.getBooker()))
+            )));
+        }
+    }
 }

@@ -174,6 +174,7 @@ public class ItemServiceImpl implements ItemService {
         return itemDto;
     }
 
+    @Override
     public Item getItem(Long itemId) {
         Optional<Item> item = itemRepository.findById(itemId);
         if (item.isPresent()) {
@@ -258,7 +259,7 @@ public class ItemServiceImpl implements ItemService {
 
         if (bookings.size() > 0) {
             Booking booking = bookings.get(0);
-            System.out.println(booking);
+
             if (booking.getStatus() == Status.APPROVED) {
                 BookingShortInfoDto lastBooking = new BookingShortInfoDto();
                 lastBooking.setId(booking.getId());
@@ -275,7 +276,6 @@ public class ItemServiceImpl implements ItemService {
 
         if (bookings.size() > 0) {
             Booking booking = bookings.get(0);
-            System.out.println(booking);
 
             if (booking.getStatus() == Status.APPROVED) {
                 BookingShortInfoDto nextBooking = new BookingShortInfoDto();
