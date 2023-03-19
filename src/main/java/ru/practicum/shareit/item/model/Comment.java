@@ -26,16 +26,4 @@ public class Comment {
 
     @Column(name = "created_date")
     private LocalDateTime created;
-
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (!(o instanceof Comment)) return false;
-//        return id != null && id.equals(((Comment) o).getId());
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return getClass().hashCode();
-//    }
 }
