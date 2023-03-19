@@ -51,7 +51,15 @@ class BookingServiceImplTest {
 
         assertThat(addedBooking.getId(), notNullValue());
         assertThat(addedBooking.getBooker(), equalTo(user));
+        assertThat(addedBooking.getStart(), equalTo(start));
+        assertThat(addedBooking.getEnd(), equalTo(end));
         assertThat(addedBooking.getStatus(), equalTo(Status.WAITING));
+
+        bookingService.setApprove(ownUser.getId(), addedBooking.getId(), true);
+
+        ItemDto gotItemDto = itemService.getItemDto(ownUser.getId(), itemDto.getId());
+
+        assertThat(user.getId(), equalTo(gotItemDto.getNextBooking().getBookerId()));
     }
 
     @Test

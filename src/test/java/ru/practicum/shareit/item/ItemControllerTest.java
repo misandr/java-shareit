@@ -7,7 +7,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import ru.practicum.shareit.DateUtils;
+import ru.practicum.shareit.exceptions.NullValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.user.UserService;
@@ -56,6 +58,21 @@ class ItemControllerTest {
                 .andExpect(jsonPath("$.name", is(itemDto.getName())))
                 .andExpect(jsonPath("$.description", is(itemDto.getDescription())))
                 .andExpect(jsonPath("$.available", is(itemDto.getAvailable())));
+    }
+
+    @Test
+    void addItemWithException() throws Exception {
+        when(itemService.addItem(any(), any()))
+                .thenThrow(NullValidationException.class);
+
+        mvc.perform(post("/items")
+                        .header(HEADER_USER_ID, 1)
+                        .content(mapper.writeValueAsString(null))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(status().is(400));
     }
 
     @Test

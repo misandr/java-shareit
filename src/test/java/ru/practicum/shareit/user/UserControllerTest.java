@@ -116,7 +116,7 @@ class UserControllerTest {
     }
 
     @Test
-    void addUserUserWithException() throws Exception {
+    void addUserWithException() throws Exception {
         when(userService.addUser(any()))
                 .thenThrow(NullValidationException.class);
 
