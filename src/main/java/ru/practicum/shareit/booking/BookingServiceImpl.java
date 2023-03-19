@@ -12,6 +12,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.enums.Status;
 import ru.practicum.shareit.exceptions.BookingNotFoundException;
+import ru.practicum.shareit.exceptions.ForbiddenException;
 import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.ItemMapper;
@@ -108,6 +109,11 @@ public class BookingServiceImpl implements BookingService {
                 }
 
                 Booking addedBooking = bookingRepository.save(booking.get());
+
+                if (!addedBooking.equals(booking.get())) {
+                    log.warn("Can't approve booking " + booking.get().getId());
+                    throw new ForbiddenException("Can't approve booking " + booking.get().getId());
+                }
 
                 ItemDto itemDto = ItemMapper.toItemDto(item);
 

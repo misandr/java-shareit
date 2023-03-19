@@ -41,28 +41,14 @@ class ItemRequestControllerTest {
 
     @Test
     void addItemRequest() throws Exception {
-
-//        User user = createUser("Пётр");
-
         ItemDto itemDto = createItemDto("Вещь");
 
         LocalDateTime created = DateUtils.now();
         ItemRequestDto itemRequestDto = createItemRequestDto("Дрель", created, List.of(itemDto));
 
-        when(itemRequestService.addItemRequest(any(), any()))
-                .thenReturn(itemRequestDto);
+        when(itemRequestService.addItemRequest(any(), any())).thenReturn(itemRequestDto);
 
-        mvc.perform(post("/requests")
-                        .header(HEADER_USER_ID, 1)
-                        .content(mapper.writeValueAsString(itemRequestDto))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(itemRequestDto.getId()), Long.class))
-                .andExpect(jsonPath("$.description", is(itemRequestDto.getDescription())))
-                .andExpect(jsonPath("$.items.[0].id", is(itemDto.getId().intValue())))
-                .andExpect(jsonPath("$.items.[0].name", is(itemDto.getName())));
+        mvc.perform(post("/requests").header(HEADER_USER_ID, 1).content(mapper.writeValueAsString(itemRequestDto)).characterEncoding(StandardCharsets.UTF_8).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(jsonPath("$.id", is(itemRequestDto.getId()), Long.class)).andExpect(jsonPath("$.description", is(itemRequestDto.getDescription()))).andExpect(jsonPath("$.items.[0].id", is(itemDto.getId().intValue()))).andExpect(jsonPath("$.items.[0].name", is(itemDto.getName())));
     }
 
     @Test
@@ -75,19 +61,9 @@ class ItemRequestControllerTest {
         LocalDateTime created = DateUtils.now();
         ItemRequestDto itemRequestDto = createItemRequestDto("Дрель", created, List.of(itemDto));
 
-        when(itemRequestService.getOwnItemRequests(any()))
-                .thenReturn(List.of(itemRequestDto));
+        when(itemRequestService.getOwnItemRequests(any())).thenReturn(List.of(itemRequestDto));
 
-        mvc.perform(get("/requests")
-                        .header(HEADER_USER_ID, 1)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.[0].id", is(itemRequestDto.getId()), Long.class))
-                .andExpect(jsonPath("$.[0].description", is(itemRequestDto.getDescription())))
-                .andExpect(jsonPath("$.[0].items.[0].id", is(itemDto.getId().intValue())))
-                .andExpect(jsonPath("$.[0].items.[0].name", is(itemDto.getName())));
+        mvc.perform(get("/requests").header(HEADER_USER_ID, 1).characterEncoding(StandardCharsets.UTF_8).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(jsonPath("$.[0].id", is(itemRequestDto.getId()), Long.class)).andExpect(jsonPath("$.[0].description", is(itemRequestDto.getDescription()))).andExpect(jsonPath("$.[0].items.[0].id", is(itemDto.getId().intValue()))).andExpect(jsonPath("$.[0].items.[0].name", is(itemDto.getName())));
     }
 
     @Test
@@ -99,21 +75,9 @@ class ItemRequestControllerTest {
         LocalDateTime created = DateUtils.now();
         ItemRequestDto itemRequestDto = createItemRequestDto("Дрель", created, List.of(itemDto));
 
-        when(itemRequestService.getOtherItemRequests(any(), any(), any()))
-                .thenReturn(List.of(itemRequestDto));
+        when(itemRequestService.getOtherItemRequests(any(), any(), any())).thenReturn(List.of(itemRequestDto));
 
-        mvc.perform(get("/requests/all")
-                        .header(HEADER_USER_ID, 1)
-                        .param("from", "0")
-                        .param("size", "1")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.[0].id", is(itemRequestDto.getId()), Long.class))
-                .andExpect(jsonPath("$.[0].description", is(itemRequestDto.getDescription())))
-                .andExpect(jsonPath("$.[0].items.[0].id", is(itemDto.getId().intValue())))
-                .andExpect(jsonPath("$.[0].items.[0].name", is(itemDto.getName())));
+        mvc.perform(get("/requests/all").header(HEADER_USER_ID, 1).param("from", "0").param("size", "1").characterEncoding(StandardCharsets.UTF_8).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(jsonPath("$.[0].id", is(itemRequestDto.getId()), Long.class)).andExpect(jsonPath("$.[0].description", is(itemRequestDto.getDescription()))).andExpect(jsonPath("$.[0].items.[0].id", is(itemDto.getId().intValue()))).andExpect(jsonPath("$.[0].items.[0].name", is(itemDto.getName())));
     }
 
     @Test
@@ -125,19 +89,9 @@ class ItemRequestControllerTest {
         LocalDateTime created = DateUtils.now();
         ItemRequestDto itemRequestDto = createItemRequestDto("Дрель", created, List.of(itemDto));
 
-        when(itemRequestService.getItemRequestDto(any(), any()))
-                .thenReturn(itemRequestDto);
+        when(itemRequestService.getItemRequestDto(any(), any())).thenReturn(itemRequestDto);
 
-        mvc.perform(get("/requests/1")
-                        .header(HEADER_USER_ID, 1)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(itemRequestDto.getId()), Long.class))
-                .andExpect(jsonPath("$.description", is(itemRequestDto.getDescription())))
-                .andExpect(jsonPath("$.items[0].id", is(itemDto.getId().intValue())))
-                .andExpect(jsonPath("$.items[0].name", is(itemDto.getName())));
+        mvc.perform(get("/requests/1").header(HEADER_USER_ID, 1).characterEncoding(StandardCharsets.UTF_8).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(jsonPath("$.id", is(itemRequestDto.getId()), Long.class)).andExpect(jsonPath("$.description", is(itemRequestDto.getDescription()))).andExpect(jsonPath("$.items[0].id", is(itemDto.getId().intValue()))).andExpect(jsonPath("$.items[0].name", is(itemDto.getName())));
     }
 
 
