@@ -232,6 +232,74 @@ class ItemServiceImplTest {
     }
 
     @Test
+    void getItemsWithCommits() {
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User ownerUser = userService.addUser(new User(0L, "Иван", "j@y.ru"));
+
+        ItemDto itemDto1 = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
+        ItemDto itemDto2 = itemService.addItem(ownerUser.getId(), makeItemDto("Item 2", "Bad"));
+        ItemDto itemDto3 = itemService.addItem(ownerUser.getId(), makeItemDto("Item 3", "Good"));
+
+        List<ItemDto> sourceItems = List.of(itemDto1, itemDto2, itemDto3);
+
+        LocalDateTime start = DateUtils.now().plusSeconds(1);
+        LocalDateTime end = DateUtils.now().plusSeconds(2);
+
+        BookingDto booking1 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, start, end, itemDto1.getId(), itemDto1, user, Status.WAITING));
+
+        bookingService.setApprove(ownerUser.getId(), booking1.getId(), true);
+
+        BookingDto booking2 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, start, end, itemDto2.getId(), itemDto1, user, Status.WAITING));
+
+        bookingService.setApprove(ownerUser.getId(), booking2.getId(), true);
+
+        BookingDto booking3 = bookingService.addBooking(user.getId(),
+                new BookingDto(0L, start, end, itemDto3.getId(), itemDto1, user, Status.WAITING));
+
+        bookingService.setApprove(ownerUser.getId(), booking3.getId(), true);
+
+        try {
+            Thread.sleep(3000, 0);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        CommentDto commentDto = itemService.addComment(user.getId(), itemDto1.getId(),
+                new CommentDto(0L, "Good", itemDto1.getId(), user.getName(), null));
+
+        List<CommentDto> sourceCommentsDto = List.of(commentDto);
+
+        List<ItemDto> targetItems = itemService.getItems(ownerUser.getId(), 0, 3);
+
+        assertThat(targetItems, hasSize(sourceItems.size()));
+        for (ItemDto sourceItem : sourceItems) {
+            assertThat(targetItems, hasItem(allOf(
+                    hasProperty("id", notNullValue()),
+                    hasProperty("name", equalTo(sourceItem.getName())),
+                    hasProperty("description", equalTo(sourceItem.getDescription())),
+                    hasProperty("available", equalTo(sourceItem.getAvailable())),
+                    hasProperty("lastBooking", notNullValue())
+            )));
+        }
+
+        for (ItemDto targetItem : targetItems) {
+            if (targetItem.getId().equals(itemDto1.getId())) {
+                assertThat(targetItem.getComments(), hasSize(sourceCommentsDto.size()));
+                for (CommentDto sourceComment : sourceCommentsDto) {
+                    assertThat(targetItem.getComments(), hasItem(allOf(
+                            hasProperty("id", notNullValue()),
+                            hasProperty("text", equalTo(sourceComment.getText())),
+                            hasProperty("authorName", equalTo(sourceComment.getAuthorName())),
+                            hasProperty("created", equalTo(sourceComment.getCreated()))
+                    )));
+                }
+            }
+        }
+    }
+
+    @Test
     void getItemsNullRange() {
         User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
 
@@ -306,9 +374,10 @@ class ItemServiceImplTest {
         CommentDto commentDto = itemService.addComment(user.getId(), item.getId(),
                 new CommentDto(0L, "Good", item.getId(), user.getName(), null));
 
+        List<CommentDto> sourceCommentsDto = List.of(commentDto);
+
         ItemDto gotItem = itemService.getItemDto(ownerUser.getId(), item.getId());
 
-        List<CommentDto> sourceCommentsDto = List.of(commentDto);
 
         assertThat(gotItem.getId(), notNullValue());
         assertThat(gotItem.getName(), equalTo(item.getName()));
@@ -324,6 +393,27 @@ class ItemServiceImplTest {
                     hasProperty("created", equalTo(sourceComment.getCreated()))
             )));
         }
+    }
+
+    @Test
+    void getItemDtoReject() {
+        User user = userService.addUser(new User(0L, "Пётр", "j@j.ru"));
+        User ownerUser = userService.addUser(new User(0L, "Иван", "j@y.ru"));
+
+        ItemDto item = itemService.addItem(ownerUser.getId(), makeItemDto("Item 1", "Good"));
+
+        LocalDateTime start = DateUtils.now().plusSeconds(1);
+        LocalDateTime end = DateUtils.now().plusSeconds(2);
+
+        bookingService.addBooking(user.getId(),
+                new BookingDto(0L, start, end, item.getId(), item, user, Status.WAITING));
+
+        ItemDto gotItem = itemService.getItemDto(ownerUser.getId(), item.getId());
+
+        assertThat(gotItem.getId(), notNullValue());
+        assertThat(gotItem.getName(), equalTo(item.getName()));
+        assertThat(gotItem.getDescription(), equalTo(item.getDescription()));
+        assertThat(gotItem.getLastBooking(), nullValue());
     }
 
     @Test

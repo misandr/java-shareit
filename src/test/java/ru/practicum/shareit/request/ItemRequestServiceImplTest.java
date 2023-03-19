@@ -42,6 +42,18 @@ class ItemRequestServiceImplTest {
     }
 
     @Test
+    void addItemRequestDescriptionNull() {
+        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
+
+        final NullValidationException exception = Assertions.assertThrows(
+                NullValidationException.class,
+                () -> itemRequestService.addItemRequest(user.getId(),
+                        new ItemRequestDto(0L, null, null, null)));
+
+        Assertions.assertEquals("Description is null!", exception.getMessage());
+    }
+
+    @Test
     void getOwnItemRequests() {
 
         User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
@@ -111,18 +123,6 @@ class ItemRequestServiceImplTest {
                 () -> itemRequestService.getItemRequestDto(user.getId(), 1000L));
 
         Assertions.assertEquals("Not found request 1000", exception.getMessage());
-    }
-
-    @Test
-    void addItemRequestDescriptionNull() {
-        User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
-
-        final NullValidationException exception = Assertions.assertThrows(
-                NullValidationException.class,
-                () -> itemRequestService.addItemRequest(user.getId(),
-                        new ItemRequestDto(0L, null, null, null)));
-
-        Assertions.assertEquals("Description is null!", exception.getMessage());
     }
 
     @Test

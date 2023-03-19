@@ -3,6 +3,9 @@ package ru.practicum.shareit.item;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ItemMapper {
     public static Item toItem(ItemDto itemDto) {
         Item item = new Item();
@@ -26,5 +29,15 @@ public class ItemMapper {
         itemDto.setRequestId(item.getRequestId());
 
         return itemDto;
+    }
+
+    public static List<ItemDto> toItemsDto(List<Item> items) {
+        List<ItemDto> itemsDto = new ArrayList<>();
+
+        for (Item item : items) {
+            itemsDto.add(ItemMapper.toItemDto(item));
+        }
+
+        return itemsDto;
     }
 }

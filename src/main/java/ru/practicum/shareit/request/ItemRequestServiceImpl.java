@@ -12,7 +12,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemRepository;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.user.User;
@@ -68,11 +67,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
             List<Item> items = itemRepository.findByRequestId(itemRequest.getId());
 
-            List<ItemDto> itemsDto = new ArrayList<>();
-            for (Item item : items) {
-                itemsDto.add(ItemMapper.toItemDto(item));
-            }
-            itemRequestDto.setItems(itemsDto);
+            itemRequestDto.setItems(ItemMapper.toItemsDto(items));
 
             listItemRequests.add(itemRequestDto);
         }
@@ -87,33 +82,21 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
         if ((from != null) && (size != null)) {
             Pageable page = PageRequest.of(from, size);
-            do {
 
-                Page<ItemRequest> itemRequestPage = itemRequestRepository.findAll(page);
+            Page<ItemRequest> itemRequestPage = itemRequestRepository.findAll(page);
 
-                itemRequestPage.getContent().forEach(itemRequest -> {
+            itemRequestPage.getContent().forEach(itemRequest -> {
 
-                    if (!itemRequest.getRequestor().equals(user)) {
-                        ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest);
+                if (!itemRequest.getRequestor().equals(user)) {
+                    ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(itemRequest);
 
-                        List<Item> items = itemRepository.findByRequestId(itemRequest.getId());
+                    List<Item> items = itemRepository.findByRequestId(itemRequest.getId());
 
-                        List<ItemDto> itemsDto = new ArrayList<>();
-                        for (Item item : items) {
-                            itemsDto.add(ItemMapper.toItemDto(item));
-                        }
-                        itemRequestDto.setItems(itemsDto);
+                    itemRequestDto.setItems(ItemMapper.toItemsDto(items));
 
-                        listItemRequests.add(itemRequestDto);
-                    }
-                });
-
-                if (itemRequestPage.hasNext()) {
-                    page = PageRequest.of(itemRequestPage.getNumber() + 1, itemRequestPage.getSize(), itemRequestPage.getSort()); // или для простоты -- userPage.nextOrLastPageable()
-                } else {
-                    page = null;
+                    listItemRequests.add(itemRequestDto);
                 }
-            } while (page != null);
+            });
         }
         return listItemRequests;
     }
@@ -129,12 +112,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
             List<Item> items = itemRepository.findByRequestId(itemRequest.getId());
 
-            List<ItemDto> itemsDto = new ArrayList<>();
-            for (Item item : items) {
-                itemsDto.add(ItemMapper.toItemDto(item));
-            }
-
-            itemRequestDto.setItems(itemsDto);
+            itemRequestDto.setItems(ItemMapper.toItemsDto(items));
 
             return itemRequestDto;
         } else {
