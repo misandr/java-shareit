@@ -3,6 +3,7 @@ package ru.practicum.shareit.request;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 import javax.validation.Valid;
@@ -38,8 +39,8 @@ public class ItemRequestController {
                                                      @RequestParam(required = false) Integer from,
                                                      @RequestParam(required = false) Integer size) {
         log.info("Get other requests item from {}, size = {}", from, size);
-//        String query = text.toLowerCase();
-        return itemRequestService.getOtherItemRequests(userId, from, size);
+
+        return itemRequestService.getOtherItemRequests(userId, new Range(from, size));
     }
 
     @GetMapping("/{requestId}")

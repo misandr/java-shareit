@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import ru.practicum.shareit.DateUtils;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.exceptions.NotFoundException;
 import ru.practicum.shareit.exceptions.NullValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -116,7 +117,7 @@ class ItemControllerTest {
 
         ItemDto itemDto = createItemDto("Вещь2");
 
-        when(itemService.getItems(1L, 0, 1)).thenReturn(List.of(itemDto));
+        when(itemService.getItems(1L, new Range(0, 1))).thenReturn(List.of(itemDto));
 
         mvc.perform(get("/items")
                         .header(HEADER_USER_ID, 1)
@@ -155,7 +156,7 @@ class ItemControllerTest {
     void search() throws Exception {
         ItemDto itemDto = createItemDto("Вещь2");
 
-        when(itemService.search("ещь", 0, 1)).thenReturn(List.of(itemDto));
+        when(itemService.search("ещь", new Range(0, 1))).thenReturn(List.of(itemDto));
 
         mvc.perform(get("/items/search")
                         .param("text", "ещь")

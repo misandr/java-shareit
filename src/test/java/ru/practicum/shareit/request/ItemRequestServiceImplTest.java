@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.exceptions.ItemRequestNotFoundException;
 import ru.practicum.shareit.exceptions.NullValidationException;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
@@ -86,7 +87,7 @@ class ItemRequestServiceImplTest {
 
         List<ItemRequestDto> sourceItemRequests = List.of(itemRequest);
 
-        List<ItemRequestDto> targetItemRequests = itemRequestService.getOtherItemRequests(user.getId(), 0, 1);
+        List<ItemRequestDto> targetItemRequests = itemRequestService.getOtherItemRequests(user.getId(), new Range(0, 1));
 
         assertThat(targetItemRequests, hasSize(sourceItemRequests.size()));
         for (ItemRequestDto sourceItemRequest : sourceItemRequests) {
@@ -140,7 +141,7 @@ class ItemRequestServiceImplTest {
 
         User user = userService.addUser(new User(0L, "Иван", "j@i.ru"));
 
-        List<ItemRequestDto> targetItemRequests = itemRequestService.getOtherItemRequests(user.getId(), 0, null);
+        List<ItemRequestDto> targetItemRequests = itemRequestService.getOtherItemRequests(user.getId(), new Range(0, null));
 
         assertThat(targetItemRequests, hasSize(0));
     }

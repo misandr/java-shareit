@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.DateUtils;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.booking.BookingService;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.enums.Status;
@@ -218,7 +219,7 @@ class ItemServiceImplTest {
             itemService.addItem(user.getId(), itemDto);
         }
 
-        List<ItemDto> targetItems = itemService.getItems(user.getId(), 0, 3);
+        List<ItemDto> targetItems = itemService.getItems(user.getId(), new Range(0, 3));
 
         assertThat(targetItems, hasSize(sourceItems.size()));
         for (ItemDto sourceItem : sourceItems) {
@@ -271,7 +272,7 @@ class ItemServiceImplTest {
 
         List<CommentDto> sourceCommentsDto = List.of(commentDto);
 
-        List<ItemDto> targetItems = itemService.getItems(ownerUser.getId(), 0, 3);
+        List<ItemDto> targetItems = itemService.getItems(ownerUser.getId(), new Range(0, 3));
 
         assertThat(targetItems, hasSize(sourceItems.size()));
         for (ItemDto sourceItem : sourceItems) {
@@ -313,7 +314,7 @@ class ItemServiceImplTest {
             itemService.addItem(user.getId(), itemDto);
         }
 
-        List<ItemDto> targetItems = itemService.getItems(user.getId(), null, null);
+        List<ItemDto> targetItems = itemService.getItems(user.getId(), new Range(null, null));
 
         assertThat(targetItems, hasSize(sourceItems.size()));
         for (ItemDto sourceItem : sourceItems) {
@@ -332,9 +333,9 @@ class ItemServiceImplTest {
 
         final ValidationException exception = Assertions.assertThrows(
                 ValidationException.class,
-                () -> itemService.getItems(user.getId(), null, 1));
+                () -> itemService.getItems(user.getId(), new Range(null, 1)));
 
-        Assertions.assertEquals("Bad range(form or size is null) for get items user " + user.getId() + "!", exception.getMessage());
+        Assertions.assertEquals("Bad range for get items user " + user.getId() + "!", exception.getMessage());
     }
 
     @Test
@@ -472,7 +473,7 @@ class ItemServiceImplTest {
                 item3
         );
 
-        List<ItemDto> targetItems = itemService.search("Bad", 0, 2);
+        List<ItemDto> targetItems = itemService.search("Bad", new Range(0, 2));
 
         assertThat(targetItems, hasSize(sourceItems.size()));
         for (ItemDto sourceItem : sourceItems) {
@@ -487,7 +488,7 @@ class ItemServiceImplTest {
 
     @Test
     void searchEmpty() {
-        List<ItemDto> targetItems = itemService.search("Bad", 0, 2);
+        List<ItemDto> targetItems = itemService.search("Bad", new Range(0, 2));
 
         assertThat(targetItems, hasSize(0));
     }
@@ -496,9 +497,9 @@ class ItemServiceImplTest {
     void searchBadRange() {
         final ValidationException exception = Assertions.assertThrows(
                 ValidationException.class,
-                () -> itemService.search("Bad", 0, -1));
+                () -> itemService.search("Bad", new Range(0, -1)));
 
-        Assertions.assertEquals("Bad range(form 0, size -1) for search!", exception.getMessage());
+        Assertions.assertEquals("Bad range for search!", exception.getMessage());
     }
 
     @Test

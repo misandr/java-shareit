@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.DateUtils;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.enums.Status;
@@ -50,22 +51,22 @@ public class BookingServiceImpl implements BookingService {
 
         if (booking.getEnd().isBefore(DateUtils.now())) {
             throw ExceptionFactory.createValidationException(log,
-                    String.format("End date of booking %d before now!",booking.getId()));
+                    String.format("End date of booking %d before now!", booking.getId()));
         }
 
         if (booking.getEnd().isBefore(booking.getStart())) {
             throw ExceptionFactory.createValidationException(log,
-                    String.format("End date of booking %d before start!",booking.getId()));
+                    String.format("End date of booking %d before start!", booking.getId()));
         }
 
         if (booking.getStart().isBefore(DateUtils.now())) {
             throw ExceptionFactory.createValidationException(log,
-                    String.format("Start date of booking %d before now!",booking.getId()));
+                    String.format("Start date of booking %d before now!", booking.getId()));
         }
 
         if (booking.getStart().isEqual(booking.getEnd())) {
             throw ExceptionFactory.createValidationException(log,
-                    String.format("Start for booking %d equal end!",booking.getId()));
+                    String.format("Start for booking %d equal end!", booking.getId()));
         }
 
         if (item.getOwner().equals(user)) {
@@ -106,7 +107,7 @@ public class BookingServiceImpl implements BookingService {
                 Booking addedBooking = bookingRepository.save(booking.get());
 
                 if (!addedBooking.equals(booking.get())) {
-                    throw ExceptionFactory.createForbiddenException(log,"Can't approve booking " + booking.get().getId());
+                    throw ExceptionFactory.createForbiddenException(log, "Can't approve booking " + booking.get().getId());
                 }
 
                 ItemDto itemDto = ItemMapper.toItemDto(item);
@@ -140,49 +141,48 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getBookings(Long userId, String state, Integer from, Integer size) {
+    public List<BookingDto> getBookings(Long userId, String state, Range range) {
         LocalDateTime timeNow = DateUtils.now();
 
         User user = userService.getUser(userId);
 
-        if ((from != null) && (size != null)) {
-            if ((from < 0) || (size <= 0)) {
+        if (range.isPresent()) {
+            if (range.isWrong()) {
                 throw ExceptionFactory.createValidationException(log,
                         String.format("Bad range for bookings for user %d!", userId));
+            } else {
+                Sort sortByStart = Sort.by(Sort.Direction.DESC, "start");
+
+                int newFrom = range.getFrom() / range.getSize();
+                Pageable page = PageRequest.of(newFrom, range.getSize(), sortByStart);
+
+                Page<Booking> bookingsPage;
+                switch (state) {
+                    case "ALL":
+                        bookingsPage = bookingRepository.findByBooker(user, page);
+                        break;
+                    case "CURRENT":
+                        bookingsPage = bookingRepository.findByBookerAndStartIsBeforeAndEndIsAfter(user, timeNow, timeNow, page);
+                        break;
+                    case "PAST":
+                        bookingsPage = bookingRepository.findByBookerAndEndIsBefore(user, timeNow, page);
+                        break;
+                    case "FUTURE":
+                        bookingsPage = bookingRepository.findByBookerAndStartIsAfter(user, timeNow, page);
+                        break;
+                    case "WAITING":
+                        bookingsPage = bookingRepository.findByBookerAndStatusIs(user, Status.WAITING, page);
+                        break;
+                    case "REJECTED":
+                        bookingsPage = bookingRepository.findByBookerAndStatusIs(user, Status.REJECTED, page);
+                        break;
+                    default:
+                        throw ExceptionFactory.createValidationException(log, "Unknown state: UNSUPPORTED_STATUS");
+                }
+
+                return BookingMapper.toListBookingDto(bookingsPage.getContent());
             }
-
-            Sort sortByStart = Sort.by(Sort.Direction.DESC, "start");
-
-            int newFrom = from / size;
-            Pageable page = PageRequest.of(newFrom, size, sortByStart);
-
-            Page<Booking> bookingsPage;
-            switch (state) {
-                case "ALL":
-                    bookingsPage = bookingRepository.findByBooker(user, page);
-                    break;
-                case "CURRENT":
-                    bookingsPage = bookingRepository.findByBookerAndStartIsBeforeAndEndIsAfter(user, timeNow, timeNow, page);
-                    break;
-                case "PAST":
-                    bookingsPage = bookingRepository.findByBookerAndEndIsBefore(user, timeNow, page);
-                    break;
-                case "FUTURE":
-                    bookingsPage = bookingRepository.findByBookerAndStartIsAfter(user, timeNow, page);
-                    break;
-                case "WAITING":
-                    bookingsPage = bookingRepository.findByBookerAndStatusIs(user, Status.WAITING, page);
-                    break;
-                case "REJECTED":
-                    bookingsPage = bookingRepository.findByBookerAndStatusIs(user, Status.REJECTED, page);
-                    break;
-                default:
-                    throw ExceptionFactory.createValidationException(log, "Unknown state: UNSUPPORTED_STATUS");
-            }
-
-            return BookingMapper.toListBookingDto(bookingsPage.getContent());
-        } else if ((from == null) && (size == null)) {
-
+        } else {
             List<Booking> bookings;
             switch (state) {
                 case "ALL":
@@ -208,57 +208,56 @@ public class BookingServiceImpl implements BookingService {
             }
 
             return BookingMapper.toListBookingDto(bookings);
-        } else {
-            throw ExceptionFactory.createValidationException(log,
-                    String.format("Bad range for bookings for user %d!", userId));
         }
     }
 
     @Override
-    public List<BookingDto> getOwnerBookings(Long userId, String state, Integer from, Integer size) {
+    public List<BookingDto> getOwnerBookings(Long userId, String state, Range range) {
 
         LocalDateTime timeNow = DateUtils.now();
 
         User user = userService.getUser(userId);
 
-        if ((from != null) && (size != null)) {
-            if ((from < 0) || (size <= 0)) {
+
+
+        if (range.isPresent()) {
+            if (range.isWrong()) {
                 throw ExceptionFactory.createValidationException(log,
                         String.format("Bad range for bookings for owner %d!", userId));
+            } else {
+                Sort sortByStart = Sort.by(Sort.Direction.DESC, "start");
+
+                int newFrom = range.getFrom() / range.getSize();
+                Pageable page = PageRequest.of(newFrom, range.getSize(), sortByStart);
+
+                Page<Booking> bookingsPage;
+                switch (state) {
+                    case "ALL":
+                        bookingsPage = bookingRepository.findByItemOwner(user, page);
+                        break;
+                    case "CURRENT":
+                        bookingsPage = bookingRepository.findByItemOwnerAndStartIsBeforeAndEndIsAfter(user, timeNow, timeNow, page);
+                        break;
+                    case "PAST":
+                        bookingsPage = bookingRepository.findByItemOwnerAndEndIsBefore(user, timeNow, page);
+                        break;
+                    case "FUTURE":
+                        bookingsPage = bookingRepository.findByItemOwnerAndStartIsAfter(user, timeNow, page);
+                        break;
+                    case "WAITING":
+                        bookingsPage = bookingRepository.findByItemOwnerAndStatusIs(user, Status.WAITING, page);
+                        break;
+                    case "REJECTED":
+                        bookingsPage = bookingRepository.findByItemOwnerAndStatusIs(user, Status.REJECTED, page);
+                        break;
+                    default:
+                        log.warn("Unknown state: UNSUPPORTED_STATUS");
+                        throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+                }
+
+                return BookingMapper.toListBookingDto(bookingsPage.getContent());
             }
-
-            Sort sortByStart = Sort.by(Sort.Direction.DESC, "start");
-
-            int newFrom = from / size;
-            Pageable page = PageRequest.of(newFrom, size, sortByStart);
-
-            Page<Booking> bookingsPage;
-            switch (state) {
-                case "ALL":
-                    bookingsPage = bookingRepository.findByItemOwner(user, page);
-                    break;
-                case "CURRENT":
-                    bookingsPage = bookingRepository.findByItemOwnerAndStartIsBeforeAndEndIsAfter(user, timeNow, timeNow, page);
-                    break;
-                case "PAST":
-                    bookingsPage = bookingRepository.findByItemOwnerAndEndIsBefore(user, timeNow, page);
-                    break;
-                case "FUTURE":
-                    bookingsPage = bookingRepository.findByItemOwnerAndStartIsAfter(user, timeNow, page);
-                    break;
-                case "WAITING":
-                    bookingsPage = bookingRepository.findByItemOwnerAndStatusIs(user, Status.WAITING, page);
-                    break;
-                case "REJECTED":
-                    bookingsPage = bookingRepository.findByItemOwnerAndStatusIs(user, Status.REJECTED, page);
-                    break;
-                default:
-                    log.warn("Unknown state: UNSUPPORTED_STATUS");
-                    throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
-            }
-
-            return BookingMapper.toListBookingDto(bookingsPage.getContent());
-        } else if ((from == null) && (size == null)) {
+        } else {
             List<Booking> bookings;
             switch (state) {
                 case "ALL":
@@ -284,9 +283,6 @@ public class BookingServiceImpl implements BookingService {
                     throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
             }
             return BookingMapper.toListBookingDto(bookings);
-        } else {
-            throw ExceptionFactory.createValidationException(log,
-                    String.format("Bad range for bookings for owner %d!", userId));
         }
     }
 }

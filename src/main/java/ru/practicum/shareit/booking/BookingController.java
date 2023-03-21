@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.booking.dto.BookingDto;
 
 import javax.validation.Valid;
@@ -50,11 +51,11 @@ public class BookingController {
         if (state == null) {
             log.info("Get bookings by state. Count not defined.");
 
-            return bookingService.getBookings(userId, "ALL", from, size);
+            return bookingService.getBookings(userId, "ALL", new Range(from, size));
         }
         log.info("Get booking by user id {}, state {}", userId, state);
 
-        return bookingService.getBookings(userId, state, from, size);
+        return bookingService.getBookings(userId, state, new Range(from, size));
     }
 
     @GetMapping("/owner")
@@ -65,10 +66,10 @@ public class BookingController {
         if (state == null) {
             log.info("Get owner bookings by state. Count not defined. Owner id {}", userId);
 
-            return bookingService.getOwnerBookings(userId, "ALL", from, size);
+            return bookingService.getOwnerBookings(userId, "ALL", new Range(from, size));
         }
         log.info("Get owner bookings, owner id {}", userId);
 
-        return bookingService.getOwnerBookings(userId, state, from, size);
+        return bookingService.getOwnerBookings(userId, state, new Range(from, size));
     }
 }

@@ -75,7 +75,7 @@ class ItemRequestControllerTest {
         LocalDateTime created = DateUtils.now();
         ItemRequestDto itemRequestDto = createItemRequestDto("Дрель", created, List.of(itemDto));
 
-        when(itemRequestService.getOtherItemRequests(any(), any(), any())).thenReturn(List.of(itemRequestDto));
+        when(itemRequestService.getOtherItemRequests(any(), any())).thenReturn(List.of(itemRequestDto));
 
         mvc.perform(get("/requests/all").header(HEADER_USER_ID, 1).param("from", "0").param("size", "1").characterEncoding(StandardCharsets.UTF_8).contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON)).andExpect(status().isOk()).andExpect(jsonPath("$.[0].id", is(itemRequestDto.getId()), Long.class)).andExpect(jsonPath("$.[0].description", is(itemRequestDto.getDescription()))).andExpect(jsonPath("$.[0].items.[0].id", is(itemDto.getId().intValue()))).andExpect(jsonPath("$.[0].items.[0].name", is(itemDto.getName())));
     }

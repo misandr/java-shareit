@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.DateUtils;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.enums.Status;
 import ru.practicum.shareit.exceptions.BookingNotFoundException;
@@ -370,7 +371,7 @@ class BookingServiceImplTest {
             bookingService.addBooking(user.getId(), bookingDto);
         }
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "ALL", null, null);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "ALL", new Range(null, null));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -401,7 +402,7 @@ class BookingServiceImplTest {
                 new BookingDto(0L, DateUtils.now().plusHours(3), DateUtils.now().plusHours(4),
                         itemDto.getId(), itemDto, user, Status.WAITING));
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "CURRENT", null, null);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "CURRENT", new Range(null, null));
 
         assertThat(targetBookings, hasSize(0));
     }
@@ -432,7 +433,7 @@ class BookingServiceImplTest {
             throw new RuntimeException(e);
         }
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "PAST", null, null);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "PAST", new Range(null, null));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -465,7 +466,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1, booking2, booking3);
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "FUTURE", null, null);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "FUTURE", new Range(null, null));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -498,7 +499,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1, booking2, booking3);
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "WAITING", null, null);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "WAITING", new Range(null, null));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -531,7 +532,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1);
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "REJECTED", null, null);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "REJECTED", new Range(null, null));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -563,7 +564,7 @@ class BookingServiceImplTest {
             bookingService.addBooking(user.getId(), bookingDto);
         }
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "ALL", 0, 1);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "ALL", new Range(0, 1));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -594,7 +595,7 @@ class BookingServiceImplTest {
                 new BookingDto(0L, DateUtils.now().plusHours(3), DateUtils.now().plusHours(4),
                         itemDto.getId(), itemDto, user, Status.WAITING));
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "CURRENT", 0, 3);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "CURRENT", new Range(0, 3));
 
         assertThat(targetBookings, hasSize(0));
     }
@@ -625,7 +626,7 @@ class BookingServiceImplTest {
             throw new RuntimeException(e);
         }
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "PAST", 0, 1);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "PAST", new Range(0, 1));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -658,7 +659,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1, booking2, booking3);
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "FUTURE", 0, 3);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "FUTURE", new Range(0, 3));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         assertThat(targetBookings, hasSize(sourceBookings.size()));
@@ -692,7 +693,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1);
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "REJECTED", 0, 1);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "REJECTED", new Range(0, 1));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -725,7 +726,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1);
 
-        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "WAITING", 0, 1);
+        List<BookingDto> targetBookings = bookingService.getBookings(user.getId(), "WAITING", new Range(0, 1));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         assertThat(targetBookings, hasSize(sourceBookings.size()));
@@ -746,7 +747,7 @@ class BookingServiceImplTest {
 
         final ValidationException exception = Assertions.assertThrows(
                 ValidationException.class,
-                () -> bookingService.getBookings(user.getId(), "WANG", 0, 1));
+                () -> bookingService.getBookings(user.getId(), "WANG", new Range(0, 1)));
 
         Assertions.assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
     }
@@ -758,7 +759,7 @@ class BookingServiceImplTest {
 
         final ValidationException exception = Assertions.assertThrows(
                 ValidationException.class,
-                () -> bookingService.getBookings(user.getId(), "ALL", 0, 0));
+                () -> bookingService.getBookings(user.getId(), "ALL", new Range(0, 0)));
 
         Assertions.assertEquals("Bad range for bookings for user " + user.getId() + "!", exception.getMessage());
     }
@@ -770,7 +771,7 @@ class BookingServiceImplTest {
 
         final ValidationException exception = Assertions.assertThrows(
                 ValidationException.class,
-                () -> bookingService.getBookings(user.getId(), "ALL", 0, null));
+                () -> bookingService.getBookings(user.getId(), "ALL", new Range(0, null)));
 
         Assertions.assertEquals("Bad range for bookings for user " + user.getId() + "!", exception.getMessage());
     }
@@ -794,7 +795,7 @@ class BookingServiceImplTest {
             bookingService.addBooking(user.getId(), bookingDto);
         }
 
-        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "ALL", null, null);
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "ALL", new Range(null, null));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -825,7 +826,7 @@ class BookingServiceImplTest {
                 new BookingDto(0L, DateUtils.now().plusHours(3), DateUtils.now().plusHours(4),
                         itemDto.getId(), itemDto, user, Status.WAITING));
 
-        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "CURRENT", null, null);
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "CURRENT", new Range(null, null));
 
         assertThat(targetBookings, hasSize(0));
     }
@@ -850,7 +851,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1, booking2, booking3);
 
-        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "FUTURE", null, null);
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "FUTURE", new Range(null, null));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         assertThat(targetBookings, hasSize(sourceBookings.size()));
@@ -884,7 +885,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1, booking2, booking3);
 
-        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "WAITING", null, null);
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "WAITING", new Range(null, null));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -917,7 +918,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1);
 
-        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "REJECTED", null, null);
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "REJECTED", new Range(null, null));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -949,7 +950,7 @@ class BookingServiceImplTest {
             bookingService.addBooking(user.getId(), bookingDto);
         }
 
-        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "ALL", 0, 1);
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "ALL", new Range(0, 1));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -980,7 +981,7 @@ class BookingServiceImplTest {
                 new BookingDto(0L, DateUtils.now().plusHours(3), DateUtils.now().plusHours(4),
                         itemDto.getId(), itemDto, user, Status.WAITING));
 
-        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "CURRENT", 0, 3);
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "CURRENT", new Range(0, 3));
 
         assertThat(targetBookings, hasSize(0));
     }
@@ -1005,7 +1006,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1, booking2, booking3);
 
-        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "FUTURE", 0, 3);
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "FUTURE", new Range(0, 3));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         assertThat(targetBookings, hasSize(sourceBookings.size()));
@@ -1039,7 +1040,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1);
 
-        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "REJECTED", 0, 1);
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "REJECTED", new Range(0, 1));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         for (BookingDto sourceBooking : sourceBookings) {
@@ -1072,7 +1073,7 @@ class BookingServiceImplTest {
 
         List<BookingDto> sourceBookings = List.of(booking1);
 
-        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "WAITING", 0, 1);
+        List<BookingDto> targetBookings = bookingService.getOwnerBookings(ownUser.getId(), "WAITING", new Range(0, 1));
 
         assertThat(targetBookings, hasSize(sourceBookings.size()));
         assertThat(targetBookings, hasSize(sourceBookings.size()));
@@ -1093,7 +1094,7 @@ class BookingServiceImplTest {
 
         final ValidationException exception = Assertions.assertThrows(
                 ValidationException.class,
-                () -> bookingService.getOwnerBookings(user.getId(), "WANG", 0, 1));
+                () -> bookingService.getOwnerBookings(user.getId(), "WANG", new Range(0, 1)));
 
         Assertions.assertEquals("Unknown state: UNSUPPORTED_STATUS", exception.getMessage());
     }
@@ -1105,7 +1106,7 @@ class BookingServiceImplTest {
 
         final ValidationException exception = Assertions.assertThrows(
                 ValidationException.class,
-                () -> bookingService.getOwnerBookings(user.getId(), "ALL", 0, 0));
+                () -> bookingService.getOwnerBookings(user.getId(), "ALL", new Range(0, 0)));
 
         Assertions.assertEquals("Bad range for bookings for owner " + user.getId() + "!", exception.getMessage());
     }
@@ -1117,7 +1118,7 @@ class BookingServiceImplTest {
 
         final ValidationException exception = Assertions.assertThrows(
                 ValidationException.class,
-                () -> bookingService.getOwnerBookings(user.getId(), "ALL", 0, null));
+                () -> bookingService.getOwnerBookings(user.getId(), "ALL", new Range(0, null)));
 
         Assertions.assertEquals("Bad range for bookings for owner " + user.getId() + "!", exception.getMessage());
     }

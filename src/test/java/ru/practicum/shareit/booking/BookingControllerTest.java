@@ -144,7 +144,7 @@ class BookingControllerTest {
 
         BookingDto bookingDto = createBookingDto(start, end, itemDto, user, APPROVED);
 
-        when(bookingService.getBookings(any(), any(), any(), any()))
+        when(bookingService.getBookings(any(), any(), any()))
                 .thenReturn(List.of(bookingDto));
 
         mvc.perform(get("/bookings")
@@ -177,7 +177,7 @@ class BookingControllerTest {
 
         BookingDto bookingDto = createBookingDto(start, end, itemDto, user, APPROVED);
 
-        when(bookingService.getBookings(any(), any(), any(), any()))
+        when(bookingService.getBookings(any(), any(), any()))
                 .thenReturn(List.of(bookingDto));
 
         mvc.perform(get("/bookings")
@@ -209,7 +209,7 @@ class BookingControllerTest {
 
         BookingDto bookingDto = createBookingDto(start, end, itemDto, user, APPROVED);
 
-        when(bookingService.getBookings(any(), any(), any(), any()))
+        when(bookingService.getBookings(any(), any(), any()))
                 .thenReturn(List.of(bookingDto));
 
         mvc.perform(get("/bookings")
@@ -242,7 +242,7 @@ class BookingControllerTest {
 
         BookingDto bookingDto = createBookingDto(start, end, itemDto, user, APPROVED);
 
-        when(bookingService.getOwnerBookings(any(), any(), any(), any()))
+        when(bookingService.getOwnerBookings(any(), any(), any()))
                 .thenReturn(List.of(bookingDto));
 
         mvc.perform(get("/bookings/owner")
@@ -275,7 +275,7 @@ class BookingControllerTest {
 
         BookingDto bookingDto = createBookingDto(start, end, itemDto, user, APPROVED);
 
-        when(bookingService.getOwnerBookings(any(), any(), any(), any()))
+        when(bookingService.getOwnerBookings(any(), any(), any()))
                 .thenReturn(List.of(bookingDto));
 
         mvc.perform(get("/bookings/owner")

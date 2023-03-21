@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.DateUtils;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.exceptions.ForbiddenException;
 import ru.practicum.shareit.exceptions.ItemRequestNotFoundException;
 import ru.practicum.shareit.exceptions.NullValidationException;
@@ -76,12 +77,12 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDto> getOtherItemRequests(Long userId, Integer from, Integer size) {
+    public List<ItemRequestDto> getOtherItemRequests(Long userId, Range range) {
         User user = userService.getUser(userId);
         List<ItemRequestDto> listItemRequests = new ArrayList<>();
 
-        if ((from != null) && (size != null)) {
-            Pageable page = PageRequest.of(from, size);
+        if ((range.getFrom() != null) && (range.getSize() != null)) {
+            Pageable page = PageRequest.of(range.getFrom(), range.getSize());
 
             Page<ItemRequest> itemRequestPage = itemRequestRepository.findAll(page);
 

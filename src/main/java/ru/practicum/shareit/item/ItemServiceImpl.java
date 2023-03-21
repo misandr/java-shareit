@@ -8,6 +8,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.DateUtils;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingShortInfoDto;
 import ru.practicum.shareit.booking.model.Booking;
@@ -103,28 +104,26 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItems(Long userId, Integer from, Integer size) {
+    public List<ItemDto> getItems(Long userId, Range range) {
         User user = userService.getUser(userId);
 
         List<ItemDto> listItemDto = new ArrayList<>();
         List<Item> items;
 
-        if ((from != null) && (size != null)) {
-            if ((from < 0) || (size <= 0)) {
+        if (range.isPresent()) {
+            if (range.isWrong()) {
                 throw ExceptionFactory.createValidationException(log,
-                        String.format("Bad range(form %d, size %d) for get items user %d!", from, size, userId));
+                        String.format("Bad range for get items user %d!", userId));
+            } else {
+                int newFrom = range.getFrom() / range.getSize();
+                Pageable page = PageRequest.of(newFrom, range.getSize());
+
+                Page<Item> itemssPage = itemRepository.findByOwner(user, page);
+
+                items = itemssPage.getContent();
             }
-            int newFrom = from / size;
-            Pageable page = PageRequest.of(newFrom, size);
-
-            Page<Item> itemssPage = itemRepository.findByOwner(user, page);
-
-            items = itemssPage.getContent();
-        } else if ((from == null) && (size == null)) {
-            items = itemRepository.findByOwner(user);
         } else {
-            throw ExceptionFactory.createValidationException(log,
-                    String.format("Bad range(form or size is null) for get items user %d!", userId));
+            items = itemRepository.findByOwner(user);
         }
 
         for (Item item : items) {
@@ -175,33 +174,30 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> search(String query, Integer from, Integer size) {
+    public List<ItemDto> search(String query, Range range) {
         List<ItemDto> listItemDto = new ArrayList<>();
 
-        if ((from != null) && (size != null)) {
-            if ((from < 0) || (size <= 0)) {
-                throw ExceptionFactory.createValidationException(log,
-                        String.format("Bad range(form %d, size %d) for search!", from, size));
-            }
+        if (range.isPresent()) {
+            if (range.isWrong()) {
+                throw ExceptionFactory.createValidationException(log, "Bad range for search!");
+            } else {
+                if (!query.isBlank()) {
+                    int newFrom = range.getFrom() / range.getSize();
+                    Pageable page = PageRequest.of(newFrom, range.getSize());
 
-            if (!query.isBlank()) {
-                int newFrom = from / size;
-                Pageable page = PageRequest.of(newFrom, size);
-
-                Page<Item> itemsPage = itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailableIs(query, query, true, page);
-                for (Item item : itemsPage.getContent()) {
-                    listItemDto.add(ItemMapper.toItemDto(item));
+                    Page<Item> itemsPage = itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailableIs(query, query, true, page);
+                    for (Item item : itemsPage.getContent()) {
+                        listItemDto.add(ItemMapper.toItemDto(item));
+                    }
                 }
             }
-        } else if ((from == null) && (size == null)) {
+        } else {
             if (!query.isBlank()) {
                 List<Item> items = itemRepository.findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCaseAndAvailableIs(query, query, true);
                 for (Item item : items) {
                     listItemDto.add(ItemMapper.toItemDto(item));
                 }
             }
-        } else {
-            throw ExceptionFactory.createValidationException(log, "Bad range(form or size is null) for search!");
         }
 
         return listItemDto;

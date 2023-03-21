@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
@@ -42,7 +43,7 @@ public class ItemController {
                                   @RequestParam(required = false) Integer size) {
         log.info("Get items by user id {}", userId);
 
-        return itemService.getItems(userId, from, size);
+        return itemService.getItems(userId, new Range(from, size));
     }
 
     @GetMapping("/{itemId}")
@@ -58,7 +59,7 @@ public class ItemController {
                                 @RequestParam(required = false) Integer size) {
         log.info("Search item by {}", text);
         String query = text.toLowerCase();
-        return itemService.search(query, from, size);
+        return itemService.search(query, new Range(from, size));
     }
 
     @PostMapping("/{itemId}/comment")
