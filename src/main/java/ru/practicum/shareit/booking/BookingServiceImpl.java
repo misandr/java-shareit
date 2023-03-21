@@ -11,10 +11,7 @@ import ru.practicum.shareit.DateUtils;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.enums.Status;
-import ru.practicum.shareit.exceptions.BookingNotFoundException;
-import ru.practicum.shareit.exceptions.ForbiddenException;
-import ru.practicum.shareit.exceptions.ItemNotFoundException;
-import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.exceptions.*;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemServiceImpl;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -47,33 +44,32 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(Status.WAITING);
 
         if (!item.isAvailable()) {
-            log.warn("Item not available!");
-            throw new ValidationException("Item not available!");
+            throw ExceptionFactory.createValidationException(log,
+                    String.format("Item %d not available!", bookingDto.getItemId()));
         }
 
         if (booking.getEnd().isBefore(DateUtils.now())) {
-            log.warn("End date of booking before now!");
-            throw new ValidationException("End date of booking before now!");
+            throw ExceptionFactory.createValidationException(log,
+                    String.format("End date of booking %d before now!",booking.getId()));
         }
 
         if (booking.getEnd().isBefore(booking.getStart())) {
-            log.warn("End date of booking before start!");
-            throw new ValidationException("End date of booking before start!");
+            throw ExceptionFactory.createValidationException(log,
+                    String.format("End date of booking %d before start!",booking.getId()));
         }
 
         if (booking.getStart().isBefore(DateUtils.now())) {
-            log.warn("Start date of booking before now!");
-            throw new ValidationException("Start date of booking before now!");
+            throw ExceptionFactory.createValidationException(log,
+                    String.format("Start date of booking %d before now!",booking.getId()));
         }
 
         if (booking.getStart().isEqual(booking.getEnd())) {
-            log.warn("Start equal end!");
-            throw new ValidationException("Start equal end!");
+            throw ExceptionFactory.createValidationException(log,
+                    String.format("Start for booking %d equal end!",booking.getId()));
         }
 
         if (item.getOwner().equals(user)) {
-            log.warn("Own item!");
-            throw new ItemNotFoundException(item.getId());
+            throw ExceptionFactory.createItemNotFoundException(log, bookingDto.getItemId());
         }
 
         Booking addedBooking = bookingRepository.save(booking);
@@ -89,8 +85,8 @@ public class BookingServiceImpl implements BookingService {
             Item item = booking.get().getItem();
 
             if (!item.isAvailable()) {
-                log.warn("Item not available!");
-                throw new ValidationException("Item not available!");
+                throw ExceptionFactory.createValidationException(log,
+                        String.format("Item %d not available!", item.getId()));
             }
             User user = userService.getUser(userId);
 
@@ -98,8 +94,8 @@ public class BookingServiceImpl implements BookingService {
 
                 if (approved) {
                     if (booking.get().getStatus() == Status.APPROVED) {
-                        log.warn("Status booking bad!");
-                        throw new ValidationException("Status booking bad!");
+                        throw ExceptionFactory.createValidationException(log,
+                                String.format("Status booking %d is bad!", booking.get().getId()));
                     }
 
                     booking.get().setStatus(Status.APPROVED);
@@ -110,20 +106,17 @@ public class BookingServiceImpl implements BookingService {
                 Booking addedBooking = bookingRepository.save(booking.get());
 
                 if (!addedBooking.equals(booking.get())) {
-                    log.warn("Can't approve booking " + booking.get().getId());
-                    throw new ForbiddenException("Can't approve booking " + booking.get().getId());
+                    throw ExceptionFactory.createForbiddenException(log,"Can't approve booking " + booking.get().getId());
                 }
 
                 ItemDto itemDto = ItemMapper.toItemDto(item);
 
                 return BookingMapper.toBookingDto(addedBooking, itemDto);
             } else {
-                log.warn("Not found item " + item.getId());
-                throw new ItemNotFoundException(item.getId());
+                throw ExceptionFactory.createItemNotFoundException(log, item.getId());
             }
         } else {
-            log.warn("Not found booking " + bookingId);
-            throw new BookingNotFoundException(bookingId);
+            throw ExceptionFactory.createBookingNotFoundException(log, bookingId);
         }
     }
 
@@ -139,12 +132,10 @@ public class BookingServiceImpl implements BookingService {
                 ItemDto itemDto = ItemMapper.toItemDto(item);
                 return BookingMapper.toBookingDto(booking.get(), itemDto);
             } else {
-                log.warn("Not found booking" + bookingId);
-                throw new BookingNotFoundException(bookingId);
+                throw ExceptionFactory.createBookingNotFoundException(log, bookingId);
             }
         } else {
-            log.warn("Not found booking " + bookingId);
-            throw new BookingNotFoundException(bookingId);
+            throw ExceptionFactory.createBookingNotFoundException(log, bookingId);
         }
     }
 
@@ -156,8 +147,8 @@ public class BookingServiceImpl implements BookingService {
 
         if ((from != null) && (size != null)) {
             if ((from < 0) || (size <= 0)) {
-                log.warn("Bad range for bookings!");
-                throw new ValidationException("Bad range for bookings!");
+                throw ExceptionFactory.createValidationException(log,
+                        String.format("Bad range for bookings for user %d!", userId));
             }
 
             Sort sortByStart = Sort.by(Sort.Direction.DESC, "start");
@@ -186,8 +177,7 @@ public class BookingServiceImpl implements BookingService {
                     bookingsPage = bookingRepository.findByBookerAndStatusIs(user, Status.REJECTED, page);
                     break;
                 default:
-                    log.warn("Status booking bad!");
-                    throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+                    throw ExceptionFactory.createValidationException(log, "Unknown state: UNSUPPORTED_STATUS");
             }
 
             return BookingMapper.toListBookingDto(bookingsPage.getContent());
@@ -214,14 +204,13 @@ public class BookingServiceImpl implements BookingService {
                     bookings = bookingRepository.findByBookerAndStatusIs(user, Status.REJECTED);
                     break;
                 default:
-                    log.warn("Status booking bad!");
-                    throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
+                    throw ExceptionFactory.createValidationException(log, "Unknown state: UNSUPPORTED_STATUS");
             }
 
             return BookingMapper.toListBookingDto(bookings);
         } else {
-            log.warn("Bad range for bookings!");
-            throw new ValidationException("Bad range for bookings!");
+            throw ExceptionFactory.createValidationException(log,
+                    String.format("Bad range for bookings for user %d!", userId));
         }
     }
 
@@ -234,8 +223,8 @@ public class BookingServiceImpl implements BookingService {
 
         if ((from != null) && (size != null)) {
             if ((from < 0) || (size <= 0)) {
-                log.warn("Bad range for bookings!");
-                throw new ValidationException("Bad range for bookings!");
+                throw ExceptionFactory.createValidationException(log,
+                        String.format("Bad range for bookings for owner %d!", userId));
             }
 
             Sort sortByStart = Sort.by(Sort.Direction.DESC, "start");
@@ -264,7 +253,7 @@ public class BookingServiceImpl implements BookingService {
                     bookingsPage = bookingRepository.findByItemOwnerAndStatusIs(user, Status.REJECTED, page);
                     break;
                 default:
-                    log.warn("Status booking bad!");
+                    log.warn("Unknown state: UNSUPPORTED_STATUS");
                     throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
             }
 
@@ -291,13 +280,13 @@ public class BookingServiceImpl implements BookingService {
                     bookings = bookingRepository.findByItemOwnerAndStatusIs(user, Status.REJECTED);
                     break;
                 default:
-                    log.warn("Status booking bad!");
+                    log.warn("Unknown state: UNSUPPORTED_STATUS");
                     throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
             }
             return BookingMapper.toListBookingDto(bookings);
         } else {
-            log.warn("Bad range for bookings!");
-            throw new ValidationException("Bad range for bookings!");
+            throw ExceptionFactory.createValidationException(log,
+                    String.format("Bad range for bookings for owner %d!", userId));
         }
     }
 }

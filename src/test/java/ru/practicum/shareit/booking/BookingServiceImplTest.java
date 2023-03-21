@@ -78,7 +78,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.addBooking(user.getId(), bookingDto));
 
-        Assertions.assertEquals("Item not available!", exception.getMessage());
+        Assertions.assertEquals("Item " + itemDto.getId() + " not available!", exception.getMessage());
     }
 
     @Test
@@ -97,7 +97,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.addBooking(user.getId(), bookingDto));
 
-        Assertions.assertEquals("End date of booking before now!", exception.getMessage());
+        Assertions.assertEquals("End date of booking 1 before now!", exception.getMessage());
     }
 
     @Test
@@ -116,7 +116,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.addBooking(user.getId(), bookingDto));
 
-        Assertions.assertEquals("End date of booking before start!", exception.getMessage());
+        Assertions.assertEquals("End date of booking 1 before start!", exception.getMessage());
     }
 
     @Test
@@ -135,7 +135,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.addBooking(user.getId(), bookingDto));
 
-        Assertions.assertEquals("Start date of booking before now!", exception.getMessage());
+        Assertions.assertEquals("Start date of booking 1 before now!", exception.getMessage());
     }
 
     @Test
@@ -154,7 +154,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.addBooking(user.getId(), bookingDto));
 
-        Assertions.assertEquals("Start equal end!", exception.getMessage());
+        Assertions.assertEquals("Start for booking 1 equal end!", exception.getMessage());
     }
 
     @Test
@@ -238,7 +238,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.setApprove(ownUser.getId(), addedBooking.getId(), true));
 
-        Assertions.assertEquals("Status booking bad!", exception.getMessage());
+        Assertions.assertEquals("Status booking " + addedBooking.getId() + " is bad!", exception.getMessage());
     }
 
     @Test
@@ -263,7 +263,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.setApprove(ownUser.getId(), addedBooking.getId(), true));
 
-        Assertions.assertEquals("Item not available!", exception.getMessage());
+        Assertions.assertEquals("Item " + itemDto.getId() + " not available!", exception.getMessage());
     }
 
     @Test
@@ -760,7 +760,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.getBookings(user.getId(), "ALL", 0, 0));
 
-        Assertions.assertEquals("Bad range for bookings!", exception.getMessage());
+        Assertions.assertEquals("Bad range for bookings for user " + user.getId() + "!", exception.getMessage());
     }
 
     @Test
@@ -772,7 +772,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.getBookings(user.getId(), "ALL", 0, null));
 
-        Assertions.assertEquals("Bad range for bookings!", exception.getMessage());
+        Assertions.assertEquals("Bad range for bookings for user " + user.getId() + "!", exception.getMessage());
     }
 
     @Test
@@ -1107,7 +1107,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.getOwnerBookings(user.getId(), "ALL", 0, 0));
 
-        Assertions.assertEquals("Bad range for bookings!", exception.getMessage());
+        Assertions.assertEquals("Bad range for bookings for owner " + user.getId() + "!", exception.getMessage());
     }
 
     @Test
@@ -1119,7 +1119,7 @@ class BookingServiceImplTest {
                 ValidationException.class,
                 () -> bookingService.getOwnerBookings(user.getId(), "ALL", 0, null));
 
-        Assertions.assertEquals("Bad range for bookings!", exception.getMessage());
+        Assertions.assertEquals("Bad range for bookings for owner " + user.getId() + "!", exception.getMessage());
     }
 
     ItemDto makeItemDto(String name, String description, Boolean available) {

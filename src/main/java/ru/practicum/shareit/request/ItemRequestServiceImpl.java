@@ -33,7 +33,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public ItemRequestDto addItemRequest(Long userId, ItemRequestDto itemRequestDto) {
         if (itemRequestDto.getDescription() == null) {
-            log.warn("Description is null!");
+            log.warn("Description for new request is null!");
             throw new NullValidationException("Description");
         }
 

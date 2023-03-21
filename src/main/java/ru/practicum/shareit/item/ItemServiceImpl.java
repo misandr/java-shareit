@@ -81,8 +81,8 @@ public class ItemServiceImpl implements ItemService {
         User user = userService.getUser(userId);
 
         if (!gettedItem.getOwner().equals(user)) {
-            log.warn("Another user!");
-            throw new ForbiddenException("Another user!");
+            throw ExceptionFactory.createForbiddenException(log,
+                    String.format("Another user for item %d!", itemDto.getId()));
         }
 
         if (itemDto.getName() != null) {
@@ -111,8 +111,8 @@ public class ItemServiceImpl implements ItemService {
 
         if ((from != null) && (size != null)) {
             if ((from < 0) || (size <= 0)) {
-                log.warn("Bad range for items!");
-                throw new ValidationException("Bad range for items!");
+                throw ExceptionFactory.createValidationException(log,
+                        String.format("Bad range(form %d, size %d) for get items user %d!", from, size, userId));
             }
             int newFrom = from / size;
             Pageable page = PageRequest.of(newFrom, size);
@@ -123,8 +123,8 @@ public class ItemServiceImpl implements ItemService {
         } else if ((from == null) && (size == null)) {
             items = itemRepository.findByOwner(user);
         } else {
-            log.warn("Bad range for items!");
-            throw new ValidationException("Bad range for items!");
+            throw ExceptionFactory.createValidationException(log,
+                    String.format("Bad range(form or size is null) for get items user %d!", userId));
         }
 
         for (Item item : items) {
@@ -180,8 +180,8 @@ public class ItemServiceImpl implements ItemService {
 
         if ((from != null) && (size != null)) {
             if ((from < 0) || (size <= 0)) {
-                log.warn("Bad range for bookings!");
-                throw new ValidationException("Bad range for bookings!");
+                throw ExceptionFactory.createValidationException(log,
+                        String.format("Bad range(form %d, size %d) for search!", from, size));
             }
 
             if (!query.isBlank()) {
@@ -201,8 +201,7 @@ public class ItemServiceImpl implements ItemService {
                 }
             }
         } else {
-            log.warn("Bad range for items!");
-            throw new ValidationException("Bad range for items!");
+            throw ExceptionFactory.createValidationException(log, "Bad range(form or size is null) for search!");
         }
 
         return listItemDto;
@@ -237,8 +236,8 @@ public class ItemServiceImpl implements ItemService {
             savedCommentDto.setAuthorName(user.getName());
             return savedCommentDto;
         } else {
-            log.warn("No bookings!");
-            throw new ValidationException("No bookings!");
+            throw ExceptionFactory.createValidationException(log,
+                    String.format("No bookings for user %d, item %d!", user.getId(), item.getId()));
         }
     }
 

@@ -147,7 +147,7 @@ class ItemServiceImplTest {
                 ForbiddenException.class,
                 () -> itemService.updateItem(user.getId(), item));
 
-        Assertions.assertEquals("Another user!", exception.getMessage());
+        Assertions.assertEquals("Another user for item " + item.getId() + "!", exception.getMessage());
     }
 
     @Test
@@ -334,7 +334,7 @@ class ItemServiceImplTest {
                 ValidationException.class,
                 () -> itemService.getItems(user.getId(), null, 1));
 
-        Assertions.assertEquals("Bad range for items!", exception.getMessage());
+        Assertions.assertEquals("Bad range(form or size is null) for get items user " + user.getId() + "!", exception.getMessage());
     }
 
     @Test
@@ -498,7 +498,7 @@ class ItemServiceImplTest {
                 ValidationException.class,
                 () -> itemService.search("Bad", 0, -1));
 
-        Assertions.assertEquals("Bad range for bookings!", exception.getMessage());
+        Assertions.assertEquals("Bad range(form 0, size -1) for search!", exception.getMessage());
     }
 
     @Test
@@ -549,7 +549,7 @@ class ItemServiceImplTest {
                 () -> itemService.addComment(user.getId(), item.getId(),
                         new CommentDto(0L, "Good", item.getId(), user.getName(), null)));
 
-        Assertions.assertEquals("No bookings!", exception.getMessage());
+        Assertions.assertEquals("No bookings for user " + user.getId() + ", item " + item.getId() + "!", exception.getMessage());
     }
 
     @Test
