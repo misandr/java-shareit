@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.Range;
 import ru.practicum.shareit.booking.dto.BookingDto;
 
 import javax.validation.Valid;
@@ -44,28 +45,31 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getBookingsByState(@RequestHeader(HEADER_USER_ID) Long userId,
-                                               @RequestParam(required = false) String state) {
+                                               @RequestParam(required = false) String state,
+                                               @RequestParam(required = false) Integer from,
+                                               @RequestParam(required = false) Integer size) {
         if (state == null) {
             log.info("Get bookings by state. Count not defined.");
 
-            return bookingService.getBookings(userId, "ALL");
+            return bookingService.getBookings(userId, "ALL", new Range(from, size));
         }
         log.info("Get booking by user id {}, state {}", userId, state);
 
-        return bookingService.getBookings(userId, state);
+        return bookingService.getBookings(userId, state, new Range(from, size));
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getBookings(@RequestHeader(HEADER_USER_ID) Long userId,
-                                        @RequestParam(required = false) String state) {
+                                        @RequestParam(required = false) String state,
+                                        @RequestParam(required = false) Integer from,
+                                        @RequestParam(required = false) Integer size) {
         if (state == null) {
             log.info("Get owner bookings by state. Count not defined. Owner id {}", userId);
 
-            return bookingService.getOwnerBookings(userId, "ALL");
+            return bookingService.getOwnerBookings(userId, "ALL", new Range(from, size));
         }
         log.info("Get owner bookings, owner id {}", userId);
 
-        return bookingService.getOwnerBookings(userId, state);
+        return bookingService.getOwnerBookings(userId, state, new Range(from, size));
     }
-
 }
