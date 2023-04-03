@@ -7,9 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exceptions.ErrorResponse;
-import ru.practicum.shareit.exceptions.NullValidationException;
-import ru.practicum.shareit.exceptions.ValidationException;
+import ru.practicum.shareit.exceptions.*;
 
 import javax.validation.Valid;
 import java.nio.charset.StandardCharsets;
@@ -50,7 +48,18 @@ public class UserController {
         } else {
             String responseString = new String((byte[]) r.getBody(), StandardCharsets.UTF_8);
             ErrorResponse errorResponse = gson.fromJson(responseString, ErrorResponse.class);
-            throw new ValidationException(errorResponse.getError());
+            switch(r.getStatusCode().value()) {
+                case 400:
+                    throw new ValidationException(errorResponse.getError());
+                case 403:
+                    throw new ForbiddenException(errorResponse.getError());
+                case 404:
+                    throw new NotFoundException(errorResponse.getError());
+                case 409:
+                    throw new ConflictException(errorResponse.getError());
+                default:
+                    throw new RuntimeException(errorResponse.getError());
+            }
         }
     }
 
