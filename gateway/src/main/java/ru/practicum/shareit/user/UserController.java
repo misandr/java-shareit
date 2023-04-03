@@ -48,7 +48,7 @@ public class UserController {
         } else {
             String responseString = new String((byte[]) r.getBody(), StandardCharsets.UTF_8);
             ErrorResponse errorResponse = gson.fromJson(responseString, ErrorResponse.class);
-            switch(r.getStatusCode().value()) {
+            switch (r.getStatusCode().value()) {
                 case 400:
                     throw new ValidationException(errorResponse.getError());
                 case 403:
