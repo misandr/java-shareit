@@ -61,8 +61,8 @@ public class ItemServiceImpl implements ItemService {
         User user = userService.getUser(userId);
 
         if (!gettedItem.getOwner().equals(user)) {
-            throw ExceptionFactory.createForbiddenException(log,
-                    String.format("Another user for item %d!", itemDto.getId()));
+            log.warn("Another user for item " + itemDto.getId());
+            throw new ForbiddenException("Another user for item " + itemDto.getId());
         }
 
         if (itemDto.getName() != null) {
@@ -187,8 +187,8 @@ public class ItemServiceImpl implements ItemService {
             savedCommentDto.setAuthorName(user.getName());
             return savedCommentDto;
         } else {
-            throw ExceptionFactory.createValidationException(log,
-                    String.format("No bookings for user %d, item %d!", user.getId(), item.getId()));
+            log.warn("No bookings for user " + user.getId() + ", item " + item.getId());
+            throw new ValidationException("No bookings for user " + user.getId() + ", item " + item.getId());
         }
     }
 

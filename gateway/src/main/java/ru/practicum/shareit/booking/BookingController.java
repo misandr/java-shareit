@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookItemRequestDto;
 import ru.practicum.shareit.booking.dto.BookingState;
-import ru.practicum.shareit.exceptions.ExceptionFactory;
 import ru.practicum.shareit.exceptions.ValidationException;
 
 import javax.validation.Valid;
@@ -31,13 +30,13 @@ public class BookingController {
                                            @RequestBody @Valid BookItemRequestDto requestDto) {
 
         if (requestDto.getEnd().isBefore(requestDto.getStart())) {
-            throw ExceptionFactory.createValidationException(log,
-                    String.format("End date of booking %d before start!", requestDto.getItemId()));
+            log.warn("End date of booking {} before start!", requestDto.getItemId());
+            throw new ValidationException("End date of booking " + requestDto.getItemId() + " before start!");
         }
 
         if (requestDto.getStart().isEqual(requestDto.getEnd())) {
-            throw ExceptionFactory.createValidationException(log,
-                    String.format("Start for booking %d equal end!", requestDto.getItemId()));
+            log.warn("Start date for booking {} equal end!", requestDto.getItemId());
+            throw new ValidationException("Start date for booking " + requestDto.getItemId() + " equal end!");
         }
 
         log.info("Creating booking {}, userId={}", requestDto, userId);

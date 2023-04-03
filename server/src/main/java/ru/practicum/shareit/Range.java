@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class Range {
-    private Integer from;
-    private Integer size;
+    private final Integer from;
+    private final Integer size;
 
     private Range(Integer from, Integer size) {
         this.from = from;

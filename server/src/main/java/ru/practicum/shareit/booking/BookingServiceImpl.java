@@ -12,7 +12,9 @@ import ru.practicum.shareit.Range;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.enums.Status;
-import ru.practicum.shareit.exceptions.ExceptionFactory;
+import ru.practicum.shareit.exceptions.BookingNotFoundException;
+import ru.practicum.shareit.exceptions.ForbiddenException;
+import ru.practicum.shareit.exceptions.ItemNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.ItemServiceImpl;
@@ -46,12 +48,13 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(Status.WAITING);
 
         if (!item.isAvailable()) {
-            throw ExceptionFactory.createValidationException(log,
-                    String.format("Item %d not available!", bookingDto.getItemId()));
+            log.warn("Item " + bookingDto.getItemId() + " not available!");
+            throw new ValidationException("Item " + bookingDto.getItemId() + " not available!");
         }
 
         if (item.getOwner().equals(user)) {
-            throw ExceptionFactory.createItemNotFoundException(log, bookingDto.getItemId());
+            log.warn("Not found item " + bookingDto.getItemId());
+            throw new ItemNotFoundException(bookingDto.getItemId());
         }
 
         Booking addedBooking = bookingRepository.save(booking);
@@ -63,62 +66,56 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto setApprove(Long userId, Long bookingId, Boolean approved) {
-        Optional<Booking> booking = bookingRepository.findById(bookingId);
-        if (booking.isPresent()) {
-            Item item = booking.get().getItem();
+        Booking booking = getBooking(bookingId);
+        Item item = booking.getItem();
 
-            if (!item.isAvailable()) {
-                throw ExceptionFactory.createValidationException(log,
-                        String.format("Item %d not available!", item.getId()));
-            }
-            User user = userService.getUser(userId);
+        if (!item.isAvailable()) {
+            log.warn("Item " + item.getId() + " not available!");
+            throw new ValidationException("Item " + item.getId() + " not available!");
+        }
+        User user = userService.getUser(userId);
 
-            if (item.getOwner().equals(user)) {
+        if (item.getOwner().equals(user)) {
 
-                if (approved) {
-                    if (booking.get().getStatus() == Status.APPROVED) {
-                        throw ExceptionFactory.createValidationException(log,
-                                String.format("Status booking %d is bad!", booking.get().getId()));
-                    }
-
-                    booking.get().setStatus(Status.APPROVED);
-                } else {
-                    booking.get().setStatus(Status.REJECTED);
+            if (approved) {
+                if (booking.getStatus() == Status.APPROVED) {
+                    log.warn("Status booking " + booking.getId() + " is bad!");
+                    throw new ValidationException("Status booking " + booking.getId() + " is bad!");
                 }
 
-                Booking addedBooking = bookingRepository.save(booking.get());
-
-                if (!addedBooking.equals(booking.get())) {
-                    throw ExceptionFactory.createForbiddenException(log, "Can't approve booking " + booking.get().getId());
-                }
-
-                ItemDto itemDto = ItemMapper.toItemDto(item);
-
-                return BookingMapper.toBookingDto(addedBooking, itemDto);
+                booking.setStatus(Status.APPROVED);
             } else {
-                throw ExceptionFactory.createItemNotFoundException(log, item.getId());
+                booking.setStatus(Status.REJECTED);
             }
+
+            Booking addedBooking = bookingRepository.save(booking);
+
+            if (!addedBooking.equals(booking)) {
+                log.warn("Can't approve booking " + booking.getId());
+                throw new ForbiddenException("Can't approve booking " + booking.getId());
+            }
+
+            ItemDto itemDto = ItemMapper.toItemDto(item);
+
+            return BookingMapper.toBookingDto(addedBooking, itemDto);
         } else {
-            throw ExceptionFactory.createBookingNotFoundException(log, bookingId);
+            log.warn("Not found item " + item.getId());
+            throw new ItemNotFoundException(item.getId());
         }
     }
 
     @Override
-    public BookingDto getBooking(Long userId, Long bookingId) {
-        Optional<Booking> booking = bookingRepository.findById(bookingId);
-        if (booking.isPresent()) {
+    public BookingDto getBookingDto(Long userId, Long bookingId) {
+        Booking booking = getBooking(bookingId);
+        Item item = booking.getItem();
+        User user = userService.getUser(userId);
 
-            Item item = booking.get().getItem();
-            User user = userService.getUser(userId);
-
-            if (item.getOwner().equals(user) || booking.get().getBooker().equals(user)) {
-                ItemDto itemDto = ItemMapper.toItemDto(item);
-                return BookingMapper.toBookingDto(booking.get(), itemDto);
-            } else {
-                throw ExceptionFactory.createBookingNotFoundException(log, bookingId);
-            }
+        if (item.getOwner().equals(user) || booking.getBooker().equals(user)) {
+            ItemDto itemDto = ItemMapper.toItemDto(item);
+            return BookingMapper.toBookingDto(booking, itemDto);
         } else {
-            throw ExceptionFactory.createBookingNotFoundException(log, bookingId);
+            log.warn("Not found booking " + bookingId);
+            throw new BookingNotFoundException(bookingId);
         }
     }
 
@@ -155,7 +152,7 @@ public class BookingServiceImpl implements BookingService {
                 break;
             default:
                 log.warn("Unknown state: UNSUPPORTED_STATUS");
-                throw ExceptionFactory.createValidationException(log, "Unknown state: UNSUPPORTED_STATUS");
+                throw new ValidationException("Unknown state: UNSUPPORTED_STATUS");
         }
 
         return BookingMapper.toListBookingDto(bookingsPage.getContent());
@@ -199,5 +196,15 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return BookingMapper.toListBookingDto(bookingsPage.getContent());
+    }
+
+    private Booking getBooking(Long bookingId) {
+        Optional<Booking> booking = bookingRepository.findById(bookingId);
+        if (booking.isPresent()) {
+            return booking.get();
+        } else {
+            log.warn("Not found booking " + bookingId);
+            throw new BookingNotFoundException(bookingId);
+        }
     }
 }

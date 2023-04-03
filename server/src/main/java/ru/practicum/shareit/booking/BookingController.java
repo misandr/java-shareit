@@ -33,10 +33,10 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto getBooking(@RequestHeader(HEADER_USER_ID) Long userId,
+    public BookingDto getBookingDto(@RequestHeader(HEADER_USER_ID) Long userId,
                                  @PathVariable Long bookingId) {
         log.info("Get booking by id {}", bookingId);
-        return bookingService.getBooking(userId, bookingId);
+        return bookingService.getBookingDto(userId, bookingId);
     }
 
     @GetMapping

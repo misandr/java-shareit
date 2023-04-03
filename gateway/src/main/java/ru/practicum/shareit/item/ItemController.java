@@ -25,7 +25,7 @@ public class ItemController {
     private final ItemClient itemClient;
 
     @PostMapping
-    public ResponseEntity<Object> addItem(@RequestHeader("X-Sharer-User-Id") long userId,
+    public ResponseEntity<Object> addItem(@RequestHeader(HEADER_USER_ID) long userId,
                                           @Valid @RequestBody ItemDto itemDto) {
         if (itemDto.getName() == null) {
             log.warn("Name is null!");
